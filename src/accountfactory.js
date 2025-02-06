@@ -31,6 +31,8 @@ import {
 import { join } from 'path';
 import { readFile } from 'fs/promises';
 
+const APP_NAME = 'accountfactory';
+const APP_VERSION = '0.0.4';
 const ORGANIZATION_ROLE_NAME = 'OrganizationAccountAccessRole';
 const execAsync = promisify(exec);
 
@@ -672,7 +674,7 @@ async function main() {
 ╚════════════════════════════════════════╝`)
   );
 
-  program.name('deploy').description('AWS Infrastructure deployment tool').version('1.0.0');
+  program.name(APP_NAME).description('AWS Infrastructure deployment tool').version(APP_VERSION);
 
   program
     .command('list-accounts')
