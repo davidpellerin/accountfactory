@@ -710,6 +710,8 @@ export {
   getIAMClientForAccount,
 };
 
+export default main;
+
 // Only run main when this file is being executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main();
