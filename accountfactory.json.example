@@ -1,0 +1,14 @@
+{
+  "shared": {
+    "accountName": "Shared Services",
+    "email": "sharedservices@example.com"
+  },
+  "staging": {
+    "accountName": "Staging",
+    "email": "staging@example.com"
+  },
+  "production": {
+    "accountName": "Production",
+    "email": "production@example.com"
+  }
+}

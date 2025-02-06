@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+import { main } from '../src/accountfactory.js';
+import logger from '../src/logger.js';
+
+main().catch(error => {
+  logger.error('Error:', error);
+  process.exit(1);
+});

@@ -1,0 +1,39 @@
+# Tests
+tests/
+coverage/
+jest.config.js
+*.test.js
+
+# Development files
+.eslintrc*
+.prettierrc*
+.github/
+.git/
+.gitignore
+.npmignore
+.env*
+*.log
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Documentation and examples (if you want to keep them out of npm package)
+docs/
+examples/
+CONTRIBUTING.md
+CHANGELOG.md
+
+# Build and temp directories
+dist/
+tmp/
+.tmp/
+build/
+
+# Development configurations
+.aider*
+.generated/
+tsconfig.json
