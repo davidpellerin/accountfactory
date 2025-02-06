@@ -29,10 +29,10 @@ import {
 } from '@aws-sdk/client-secrets-manager';
 
 import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 
 const APP_NAME = 'accountfactory';
-const APP_VERSION = '0.0.4';
+const APP_VERSION = '0.0.5';
 const ORGANIZATION_ROLE_NAME = 'OrganizationAccountAccessRole';
 const execAsync = promisify(exec);
 
@@ -663,6 +663,33 @@ async function handleSetupAwsProfilesCommand(options) {
   }
 }
 
+async function generateSkeleton() {
+  const skeleton = {
+    accounts: [
+      {
+        accountName: 'Shared Services',
+        email: 'sharedservices@example.com',
+      },
+      {
+        accountName: 'Staging',
+        email: 'staging@example.com',
+      },
+      {
+        accountName: 'Production',
+        email: 'production@example.com',
+      },
+    ],
+  };
+  return JSON.stringify(skeleton, null, 2);
+}
+
+async function handleGenerateSkeletonCommand() {
+  const skeleton = await generateSkeleton();
+  const configPath = join(process.cwd(), 'accountfactory.json');
+  await writeFile(configPath, skeleton);
+  logger.success(`Skeleton accountfactory.json file generated.`);
+}
+
 async function main() {
   await checkForTools(['aws']);
 
@@ -680,6 +707,11 @@ async function main() {
     .command('list-accounts')
     .description('📋 List accounts in the AWS Organization')
     .action(handleListAccountsCommand);
+
+  program
+    .command('generate-skeleton')
+    .description('💀 Generate a skeleton accountfactory.json file')
+    .action(handleGenerateSkeletonCommand);
 
   program
     .command('create-accounts')

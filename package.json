@@ -1,6 +1,6 @@
 {
   "name": "@davidpellerin/accountfactory",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "AWS Organizations setup and management tool for creating and managing multi-account setups",
   "private": false,
   "publishConfig": {
