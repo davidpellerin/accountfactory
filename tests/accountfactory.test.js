@@ -31,16 +31,16 @@ describe('Configuration Management', () => {
   test('should successfully parse valid organization configuration', async () => {
     jest.unstable_mockModule('fs/promises', () => ({
       readFile: jest.fn().mockImplementation(filePath => {
-        if (path.basename(filePath) === 'orgsetup.json') {
+        if (path.basename(filePath) === 'accountfactory.json') {
           return Promise.resolve(
             JSON.stringify({
               shared: {
-                accountName: 'OwlSignalsShared',
-                email: 'owlsignalsshared@owlalerts.xyz',
+                accountName: 'Shared Services',
+                email: 'sharedservices@example.com',
               },
               staging: {
-                accountName: 'OwlSignalsStaging',
-                email: 'owlsignalsstaging@owlalerts.xyz',
+                accountName: 'Staging',
+                email: 'staging@example.com',
               },
             })
           );
@@ -55,12 +55,12 @@ describe('Configuration Management', () => {
 
     expect(config).toEqual({
       shared: {
-        accountName: 'OwlSignalsShared',
-        email: 'owlsignalsshared@owlalerts.xyz',
+        accountName: 'Shared Services',
+        email: 'sharedservices@example.com',
       },
       staging: {
-        accountName: 'OwlSignalsStaging',
-        email: 'owlsignalsstaging@owlalerts.xyz',
+        accountName: 'Staging',
+        email: 'staging@example.com',
       },
     });
   });
