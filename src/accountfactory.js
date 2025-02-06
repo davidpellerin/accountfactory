@@ -29,10 +29,11 @@ import {
 } from '@aws-sdk/client-secrets-manager';
 
 import { join } from 'path';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
+import { writeFile as fsWriteFile } from 'node:fs/promises';
 
 const APP_NAME = 'accountfactory';
-const APP_VERSION = '0.0.5';
+const APP_VERSION = '0.0.6';
 const ORGANIZATION_ROLE_NAME = 'OrganizationAccountAccessRole';
 const execAsync = promisify(exec);
 
@@ -622,7 +623,7 @@ async function handleAccountCreation(environment, accountList, username) {
 
 async function handleCreateAccountsCommand(options) {
   config.environment = 'global';
-  logger.info(chalk.red.bold('⚠️  ORGANIZATION MANAGEMENT - USE WITH CAUTION'));
+  await printHeader();
   await confirm('Are you sure you want to create new accounts in AWS Organizations?');
 
   await initializeConfig();
@@ -634,6 +635,8 @@ async function handleCreateAccountsCommand(options) {
 }
 
 async function handleSetupAwsProfilesCommand(options) {
+  await checkForTools(['aws']);
+
   config.prefix = options.prefix;
 
   try {
@@ -685,22 +688,20 @@ async function generateSkeleton() {
 
 async function handleGenerateSkeletonCommand() {
   const skeleton = await generateSkeleton();
-  const configPath = join(process.cwd(), 'accountfactory.json');
-  await writeFile(configPath, skeleton);
-  logger.success(`Skeleton accountfactory.json file generated.`);
+  fsWriteFile(join(process.cwd(), 'accountfactory.json'), skeleton);
 }
 
-async function main() {
-  await checkForTools(['aws']);
-
-  logger.info(
+async function printHeader() {
+  await console.log(
     chalk.bgRed.white.bold(`
 ╔════════════════════════════════════════╗
 ║     AWS ORGANIZATIONS MANAGEMENT       ║
 ║        USE WITH EXTREME CARE           ║
 ╚════════════════════════════════════════╝`)
   );
+}
 
+async function main() {
   program.name(APP_NAME).description('AWS Infrastructure deployment tool').version(APP_VERSION);
 
   program
