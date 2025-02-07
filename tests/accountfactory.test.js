@@ -20,11 +20,16 @@ const stsMock = mockClient(STSClient);
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.useFakeTimers();
   organizationsMock.reset();
   ssmMock.reset();
   iamMock.reset();
   secretsManagerMock.reset();
   stsMock.reset();
+});
+
+afterAll(() => {
+  jest.useRealTimers();
 });
 
 describe('Configuration Management', () => {

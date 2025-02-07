@@ -1,12 +1,12 @@
-# 🏭 accountfactory - AWS Organization Setup Tool
+# 🏭 accountfactory
 
 [![codecov](https://codecov.io/github/davidpellerin/accountfactory/graph/badge.svg?token=K1B8PQL30L)](https://codecov.io/github/davidpellerin/accountfactory)
 
-A command-line tool for managing AWS Organizations, creating accounts, and setting up IAM users across multiple accounts.
+A command-line tool for managing [AWS Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html), creating accounts, and setting up IAM users across multiple accounts.
 
 ## Features
 
-- Create and manage AWS Organization accounts (eg: shared, staging, and production environments)
+- Create and manage AWS Organizations accounts (eg: shared, staging, and production environments)
 - Set up IAM users across multiple accounts
 - Configure AWS CLI profiles automatically
 - Store credentials securely in AWS Secrets Manager
@@ -33,9 +33,9 @@ Options:
   -h, --help                    display help for command
 
 Commands:
-  list-accounts                 📋 List accounts in the AWS Organization
+  list-accounts                 📋 List accounts in your AWS Organization
   generate-skeleton             💀 Generate a skeleton accountfactory.json file
-  create-accounts [options]     🚀 Deploy accounts in the AWS Organization
+  create-accounts [options]     🚀 Deploy accounts in your AWS Organization
   setup-aws-profiles [options]  🔧 Configure AWS profiles using creds from Secrets Manager
   help [command]                display help for command
 ```
@@ -55,7 +55,7 @@ $ AWS_PROFILE=organizations accountfactory list-accounts
 └─────────┴───────────────────────────────────┴────────────────┴─────────────┘
 ```
 
-^ In this example I ran this command with AWS_PROFILE=organizations (which is a profile I specifically setup with Organizations [IAM permissions](#IAM-Permissions))
+^ In this example I ran this command with `AWS_PROFILE=organizations` (which is a profile I specifically setup with permissions to manage my organization. (see: [IAM permissions](#IAM-Permissions))
 
 ### Generate Skeleton
 
@@ -63,7 +63,7 @@ $ AWS_PROFILE=organizations accountfactory list-accounts
 $ accountfactory generate-skeleton
 ```
 
-Creates an `accountfactory.json` file in your current directory that you can modify with the list of accounts you want to create. It will look like this:
+Creates an `accountfactory.json` file in your current directory. It is a json file that you can modify with the list of accounts you want `accountfactory` to create. It will look like this:
 
 ```json
 {
@@ -160,10 +160,18 @@ Here are the permissions that I use:
 }
 ```
 
+## Environment Variables
+
+| Variable | Value | Purpose |
+|---------------------|--------|----------|
+| ACCOUNTFACTORY_ENABLE_LOGGING | true | Enables logging to disk (~/.local/state/accountfactory) |
+
+
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE) file for details

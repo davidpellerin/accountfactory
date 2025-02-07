@@ -1,60 +1,79 @@
 import winston from 'winston';
 import chalk from 'chalk';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { homedir } from 'os';
 
-// Define custom log levels
 const customLevels = {
   levels: {
     error: 0,
     warning: 1,
     success: 2,
     info: 3,
-    debug: 4
+    debug: 4,
   },
   colors: {
     error: 'red',
     warning: 'yellow',
     success: 'green',
     info: 'white',
-    debug: 'gray'
+    debug: 'gray',
+  },
+};
+
+const createLogDirectory = () => {
+  const logDirectory = getLogDirectory();
+  if (!existsSync(logDirectory)) {
+    mkdirSync(logDirectory, { recursive: true });
   }
 };
 
-// Create the logger for file logging
-const fileLogger = winston.createLogger({
-  levels: customLevels.levels,
-  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-  transports: [
-    new winston.transports.File({
-      filename: 'error.log',
-      level: 'error',
-      silent: process.env.NODE_ENV === 'test',
-    }),
-    new winston.transports.File({
-      filename: 'combined.log',
-      silent: process.env.NODE_ENV === 'test',
-    }),
-  ],
+const getLogDirectory = () => {
+  if (process.platform === 'win32') {
+    return join(process.env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local'), 'accountfactory', 'logs');
+  }
+  return join(homedir(), '.local', 'state', 'accountfactory', 'logs');
+};
+
+let transports = [];
+
+const consoleTransport = new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      const color =
+        {
+          debug: chalk.gray,
+          info: chalk.white,
+          success: chalk.green,
+          error: chalk.red,
+          warning: chalk.yellow,
+        }[level] || chalk.white;
+      return color(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
+    })
+  ),
+  silent: process.env.NODE_ENV === 'test',
 });
 
-// CLI-friendly logging function
+transports.push(consoleTransport);
+
+// if ACCOUNTFACTORY_ENABLE_LOGGING environment variable is set add file transport
+if (process.env.ACCOUNTFACTORY_ENABLE_LOGGING === 'true') {
+  createLogDirectory();
+  transports.push(
+    new winston.transports.File({
+      filename: join(getLogDirectory(), 'accountfactory.log'),
+    })
+  );
+}
+
+const winstonLogger = winston.createLogger({
+  levels: customLevels.levels,
+  transports: transports,
+});
+
 const log = (message, type = 'info') => {
-  const colors = {
-    debug: chalk.gray,
-    info: chalk.white,
-    success: chalk.green,
-    error: chalk.red,
-    warning: chalk.yellow,
-  };
-
-  // Don't output to console during tests unless explicitly enabled
-  if (process.env.NODE_ENV !== 'test' || process.env.LOG_IN_TEST) {
-    const color = colors[type] || colors.info;
-    // eslint-disable-next-line no-console
-    console.log(color(`[${new Date().toISOString()}] [${type.toUpperCase()}] ${message}`));
-  }
-
-  // Always log to file (except in test)
-  fileLogger.log(type, message);
+  winstonLogger.log(type, message);
 };
 
 export const logger = {
