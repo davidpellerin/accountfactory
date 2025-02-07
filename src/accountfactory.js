@@ -33,7 +33,7 @@ import { readFile } from 'fs/promises';
 import { writeFile as fsWriteFile } from 'node:fs/promises';
 
 const APP_NAME = 'accountfactory';
-const APP_VERSION = '0.0.8';
+const APP_VERSION = '0.0.9';
 const ORGANIZATION_ROLE_NAME = 'OrganizationAccountAccessRole';
 const execAsync = promisify(exec);
 
