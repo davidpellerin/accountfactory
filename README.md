@@ -1,5 +1,7 @@
 # 🏭 accountfactory - AWS Organization Setup Tool
 
+[![codecov](https://codecov.io/github/davidpellerin/accountfactory/graph/badge.svg?token=K1B8PQL30L)](https://codecov.io/github/davidpellerin/accountfactory)
+
 A command-line tool for managing AWS Organizations, creating accounts, and setting up IAM users across multiple accounts.
 
 ## Features
