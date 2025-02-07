@@ -692,6 +692,7 @@ async function handleGenerateSkeletonCommand() {
 }
 
 async function printHeader() {
+  // eslint-disable-next-line no-console
   await console.log(
     chalk.bgRed.white.bold(`
 ╔════════════════════════════════════════╗
