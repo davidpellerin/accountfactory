@@ -30,12 +30,16 @@ const createLogDirectory = () => {
 
 const getLogDirectory = () => {
   if (process.platform === 'win32') {
-    return join(process.env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local'), 'accountfactory', 'logs');
+    return join(
+      process.env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local'),
+      'accountfactory',
+      'logs'
+    );
   }
   return join(homedir(), '.local', 'state', 'accountfactory', 'logs');
 };
 
-let transports = [];
+const transports = [];
 
 const consoleTransport = new winston.transports.Console({
   format: winston.format.combine(
@@ -69,7 +73,7 @@ if (process.env.ACCOUNTFACTORY_ENABLE_LOGGING === 'true') {
 
 const winstonLogger = winston.createLogger({
   levels: customLevels.levels,
-  transports: transports,
+  transports,
 });
 
 const log = (message, type = 'info') => {
