@@ -1,4 +1,4 @@
-# accountfactory - AWS Organization Setup Tool
+# 🏭 accountfactory - AWS Organization Setup Tool
 
 A command-line tool for managing AWS Organizations, creating accounts, and setting up IAM users across multiple accounts.
 
@@ -53,7 +53,7 @@ $ AWS_PROFILE=organizations accountfactory list-accounts
 └─────────┴───────────────────────────────────┴────────────────┴─────────────┘
 ```
 
-^ In this example I ran this command with AWS_PROFILE=organizations (which is a profile I specifically setup with Organizations IAM permissions)
+^ In this example I ran this command with AWS_PROFILE=organizations (which is a profile I specifically setup with Organizations [IAM permissions](#IAM-Permissions))
 
 ### Generate Skeleton
 
@@ -107,6 +107,56 @@ This tool requires high-privilege AWS credentials and should be used with cautio
 - Review all actions before confirming
 - Follow the principle of least privilege
 - Regularly rotate credentials
+
+## IAM Permissions
+
+Although you could _theoretically_ just give your account `AdministratorAccess` that's really not a good practice.
+
+One good way of limiting the blast radius is to use a dediacted organizations "management account" that you will use to create and manage the child accounts.
+
+Here are the permissions that I use:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "organizations:CreateAccount",
+                "organizations:DescribeCreateAccountStatus",
+                "organizations:DescribeAccount",
+                "organizations:ListAccounts",
+                "organizations:ListAWSServiceAccessForOrganization",
+                "organizations:EnableAWSServiceAccess",
+                "organizations:DescribeOrganization",
+                "organizations:ListChildren",
+                "organizations:ListRoots"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:AttachRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:CreatePolicy",
+                "iam:ListRoles",
+                "iam:GetRole"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sts:AssumeRole"
+            ],
+            "Resource": "arn:aws:iam::*:role/OrganizationAccountAccessRole"
+        }
+    ]
+}
+```
 
 ## Contributing
 

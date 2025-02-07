@@ -30,13 +30,23 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: 'npm'
-      - run: npm ci
-      - run: npm run test:coverage
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests (with coverage)
+        run: npm run test:coverage
+
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:
