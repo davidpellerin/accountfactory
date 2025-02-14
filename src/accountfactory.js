@@ -33,17 +33,17 @@ import { readFile } from 'fs/promises';
 import { writeFile as fsWriteFile } from 'node:fs/promises';
 
 const APP_NAME = 'accountfactory';
-const APP_VERSION = '0.0.11';
+const APP_VERSION = '0.0.12';
 const ORGANIZATION_ROLE_NAME = 'OrganizationAccountAccessRole';
 const execAsync = promisify(exec);
 
-async function readOrgConfig() {
+async function readAccountFactoryConfig() {
   try {
     const configPath = join(process.cwd(), 'accountfactory.json');
     const configContent = await readFile(configPath, 'utf8');
     return JSON.parse(configContent);
   } catch (error) {
-    throw new Error(`Failed to read organization config: ${error.message}.
+    throw new Error(`Failed to read account factory config: ${error.message}.
 
       Please ensure 'accountfactory.json' exists in the current directory and is valid JSON.
 
@@ -98,7 +98,7 @@ const confirm = async message => {
   });
 };
 
-async function initializeConfig() {
+async function callGetCallerIdentity() {
   try {
     // Get caller identity to validate AWS credentials and set account ID
     const callerIdentity = await getCallerIdentity();
@@ -109,7 +109,7 @@ async function initializeConfig() {
 
     logger.info(`AWS account ID: ${config.accountId}`);
   } catch (error) {
-    logger.error(`Failed to initialize config: ${error.message}`);
+    logger.error(`Failed to get caller identity: ${error.message}`);
     throw error;
   }
 }
@@ -132,21 +132,6 @@ async function getCallerIdentity(stsClientOverride) {
   } catch (error) {
     logger.error(`Failed to get caller identity: ${error.message}`);
     throw error;
-  }
-}
-
-async function readAccountFactoryConfig() {
-  try {
-    const configPath = join(process.cwd(), 'accountfactory.json');
-    const configContent = await readFile(configPath, 'utf8');
-    return JSON.parse(configContent);
-  } catch (error) {
-    throw new Error(`Failed to read account factory config: ${error.message}.
-
-      Please ensure 'accountfactory.json' exists in the current directory and is valid JSON.
-
-      See 'accountfactory.json.example' for an example configuration.
-      `);
   }
 }
 
@@ -427,7 +412,7 @@ async function getIAMClientForAccount(accountId, stsClient = null) {
   }
 }
 
-async function checkIfUserExists(iamClient, username) {
+async function checkIfIamUserExists(iamClient, username) {
   try {
     await iamClient.send(new GetUserCommand({ UserName: username }));
     return true;
@@ -516,27 +501,37 @@ async function createIAMUser(accountId, username, stsClient = null) {
     logger.info(`Creating IAM user ${username} in account ${accountId}`);
 
     // Get IAM client for target account
-    const iamClient = await getIAMClientForAccount(accountId, stsClient);
+    const assumedIamClient = await getIAMClientForAccount(accountId, stsClient);
 
     // Check if user exists and handle accordingly
-    const userExists = await checkIfUserExists(iamClient, username);
+    const userExists = await checkIfIamUserExists(assumedIamClient, username);
     if (userExists) {
+      logger.info(
+        `IAM User already exists. Skipping user creation for ${username} in account ${accountId}`
+      );
       const shouldContinue = await handleExistingUser(accountId, username);
       if (!shouldContinue) {
         return false;
       }
+    } else {
+      logger.info(`User ${username} does not exist in account ${accountId}. Creating new user...`);
+
+      // Create new user and get credentials
+      logger.info(`Creating new user ${username} in account ${accountId}`);
+      const credentials = await createNewUser(assumedIamClient, username);
+
+      // Store credentials in Secrets Manager
+      logger.info(
+        `Storing credentials in Secrets Manager for user ${username} in account ${accountId}`
+      );
+      await storeCredentialsInSecretsManager(accountId, username, credentials);
+
+      // Display credential information
+      logger.info(`Displaying credential information for user ${username} in account ${accountId}`);
+      await displayCredentialInfo(accountId, username);
+
+      return true;
     }
-
-    // Create new user and get credentials
-    const credentials = await createNewUser(iamClient, username);
-
-    // Store credentials in Secrets Manager
-    await storeCredentialsInSecretsManager(accountId, username, credentials);
-
-    // Display credential information
-    await displayCredentialInfo(accountId, username);
-
-    return true;
   } catch (error) {
     logger.error(`Error creating user in account ${accountId}: ${error.message}`);
     throw error;
@@ -547,7 +542,9 @@ async function setupAwsProfile(accountId, username, profileName, secretsClient =
   try {
     const client = secretsClient || new SecretsManagerClient();
 
+    logger.info(`Getting existing credentials for user ${username} in account ${accountId}`);
     const credentials = await getExistingCredentials(accountId, username, client);
+
     if (!credentials) {
       throw new Error(`No credentials found for user ${username} in account ${accountId}`);
     }
@@ -585,7 +582,7 @@ async function setupAwsProfile(accountId, username, profileName, secretsClient =
 
 async function handleListAccountsCommand() {
   try {
-    await initializeConfig();
+    await callGetCallerIdentity();
     const accountList = await listOrganizationsAccounts();
     if (accountList && accountList.length > 0) {
       // eslint-disable-next-line no-console
@@ -603,7 +600,7 @@ async function handleCreateAccountsCommand(options) {
   await printHeader();
   await confirm('Are you sure you want to create new accounts in AWS Organizations?');
 
-  await initializeConfig();
+  await callGetCallerIdentity();
   const liveAccountList = await listOrganizationsAccounts();
 
   const accountFactoryConfig = await readAccountFactoryConfig();
@@ -614,21 +611,24 @@ async function handleCreateAccountsCommand(options) {
   }
 
   for (const environmentConfig of accountFactoryConfig.accounts) {
+    logger.info(`checking for ${environmentConfig.email}`);
 
-    console.log(`checking for ${environmentConfig.email}`);
-
-    if (liveAccountList.some(account => account.Email === environmentConfig.email)) {
-      logger.info(`Account ${environmentConfig.email} already exists in AWS Organizations. Skipping account creation...`);
+    if (liveAccountList.some(account => account.Email.toLowerCase() === environmentConfig.email.toLowerCase())) {
+      logger.info(
+        `Account ${environmentConfig.email} already exists in AWS Organizations. Skipping account creation...`
+      );
       continue;
     }
 
-    const accountId = await createAccountWithRetry(environmentConfig.email, environmentConfig.accountName);
+    const accountId = await createAccountWithRetry(
+      environmentConfig.email,
+      environmentConfig.accountName
+    );
     if (accountId) {
       logger.info('Waiting 30 seconds for account to be ready before creating IAM user...');
       await new Promise(resolve => setTimeout(resolve, 30000));
       await createIAMUser(accountId, options.username);
     }
-
   }
 }
 
@@ -636,17 +636,20 @@ async function handleSetupAwsProfilesCommand(options) {
   await checkForTools(['aws']);
 
   try {
-    await initializeConfig();
-    const accountList = await listOrganizationsAccounts();
+    await callGetCallerIdentity();
+    const liveAccountList = await listOrganizationsAccounts();
     const accountFactoryConfig = await readAccountFactoryConfig();
 
     for (const environmentConfig of accountFactoryConfig.accounts) {
-      const account = accountList.find((account) => account.Email.toLowerCase() === environmentConfig.email.toLowerCase());
+      const account = liveAccountList.find(
+        account => account.Email.toLowerCase() === environmentConfig.email.toLowerCase()
+      );
 
       if (account) {
-        logger.info(`Found AWS Organizations account with email ${environmentConfig.email} and profile name ${environmentConfig.profileName}`);
-      }
-      else if (!account) {
+        logger.info(
+          `Found AWS Organizations account with email ${environmentConfig.email} and profile name ${environmentConfig.profileName}`
+        );
+      } else if (!account) {
         throw new Error(
           `Could not find AWS Organizations account with email ${environmentConfig.email}`
         );
@@ -720,16 +723,15 @@ async function main() {
     .command('setup-aws-profiles')
     .description('🔧 Configure AWS profiles using creds from Secrets Manager')
     .option('--username <username>', 'IAM username to use', 'deploy')
-    .option('--prefix <prefix>', 'Prefix for AWS profiles', 'accountfactory')
     .action(handleSetupAwsProfilesCommand);
 
   program.parse();
 }
 
 export {
-  checkIfUserExists,
+  checkIfIamUserExists,
   getCallerIdentity,
-  readOrgConfig,
+  readAccountFactoryConfig,
   generatePassword,
   createOrganizationAccount,
   createAccountWithRetry,
