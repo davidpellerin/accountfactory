@@ -67,18 +67,20 @@ Creates an `accountfactory.json` file in your current directory. It is a json fi
 
 ```json
 {
-  "shared": {
-    "accountName": "Shared Services",
-    "email": "sharedservices@example.com"
-  },
-  "staging": {
-    "accountName": "Staging",
-    "email": "staging@example.com"
-  },
-  "production": {
-    "accountName": "Production",
-    "email": "production@example.com"
-  }
+  "accounts": [
+    "shared": {
+      "accountName": "Shared Services",
+      "email": "sharedservices@example.com"
+    },
+    "staging": {
+      "accountName": "Staging",
+      "email": "staging@example.com"
+    },
+    "production": {
+      "accountName": "Production",
+      "email": "production@example.com"
+    }
+  ]
 }
 ```
 
