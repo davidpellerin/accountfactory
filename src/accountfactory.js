@@ -517,7 +517,7 @@ async function createNewUser(iamClient, username) {
       secretAccessKey: accessKeyResponse.AccessKey.SecretAccessKey,
     };
   } catch (error) {
-    logger.error(`createNewUser(): Error creating new user: ${error.message}`);
+    logger.error(`Error creating new user: ${error.message}`);
     throw error;
   }
 }
