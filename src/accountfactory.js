@@ -613,7 +613,7 @@ async function handleCreateAccountsCommand(options) {
   for (const environmentConfig of accountFactoryConfig.accounts) {
     logger.info(`checking for ${environmentConfig.email}`);
 
-    if (liveAccountList.some(account => account.Email === environmentConfig.email)) {
+    if (liveAccountList.some(account => account.Email.toLowerCase() === environmentConfig.email.toLowerCase())) {
       logger.info(
         `Account ${environmentConfig.email} already exists in AWS Organizations. Skipping account creation...`
       );
