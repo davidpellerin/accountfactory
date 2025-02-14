@@ -171,7 +171,6 @@ async function createOrganizationAccount(email, accountName, roleName, client = 
     AccountName: accountName,
     RoleName: roleName,
   });
-  logger.info(`>>>>> Creating account with email ${email} and account name ${accountName} and role name ${roleName}`);
   const createAccountResponse = await orgClient.send(createAccountCommand);
   const statusId = createAccountResponse.CreateAccountStatus.Id;
 
