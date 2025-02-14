@@ -639,7 +639,7 @@ async function handleCreateAccountsCommand(options) {
   }
 
   for (const environmentConfig of accountFactoryConfig.accounts) {
-    console.log(`checking for ${environmentConfig.email}`);
+    logger.info(`checking for ${environmentConfig.email}`);
 
     if (liveAccountList.some(account => account.Email === environmentConfig.email)) {
       logger.info(
