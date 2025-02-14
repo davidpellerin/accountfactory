@@ -68,20 +68,24 @@ Creates an `accountfactory.json` file in your current directory. It is a json fi
 ```json
 {
   "accounts": [
-    "shared": {
+    {
       "accountName": "Shared Services",
+      "profileName": "myappname-shared",
       "email": "sharedservices@example.com"
     },
-    "staging": {
+    {
       "accountName": "Staging",
+      "profileName": "myappname-staging",
       "email": "staging@example.com"
     },
-    "production": {
+    {
       "accountName": "Production",
+      "profileName": "myappname-production",
       "email": "production@example.com"
     }
   ]
 }
+
 ```
 
 
