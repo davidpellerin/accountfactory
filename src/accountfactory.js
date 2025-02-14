@@ -151,6 +151,7 @@ async function readAccountFactoryConfig() {
 }
 
 async function createOrganizationAccount(email, accountName, roleName, client = null) {
+
   let orgClient;
 
   if (client === null) {
