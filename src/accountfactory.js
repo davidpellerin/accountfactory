@@ -272,7 +272,6 @@ async function createAccountWithRetry(email, accountName, client = null) {
 
   while (retryCount < MAX_RETRIES) {
     try {
-      logger.info(`>>> Creating account with email ${email} and account name ${accountName} and role name ${ORGANIZATION_ROLE_NAME}`);
       const createAccountStatusId = await createOrganizationAccount(
         email,
         accountName,
@@ -405,7 +404,7 @@ async function getExistingCredentials(accountId, username, secretsClient = null)
 
     return JSON.parse(response.SecretString);
   } catch (error) {
-    logger.warning(`getExistingCredentials(): No existing credentials found in Secrets Manager: ${error.message}`);
+    logger.warning(`No existing credentials found in Secrets Manager: ${error.message}`);
     return null;
   }
 }
