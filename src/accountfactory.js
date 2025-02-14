@@ -567,7 +567,6 @@ async function setupAwsProfile(accountId, username, profileName, secretsClient =
 
     logger.info(`Getting existing credentials for user ${username} in account ${accountId}`);
     const credentials = await getExistingCredentials(accountId, username, client);
-    console.log(credentials);
 
     if (!credentials) {
       throw new Error(`No credentials found for user ${username} in account ${accountId}`);
