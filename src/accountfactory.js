@@ -595,34 +595,6 @@ async function handleListAccountsCommand() {
   }
 }
 
-async function handleCreateIAMUsersCommand(options) {
-  await callGetCallerIdentity();
-  const liveAccountList = await listOrganizationsAccounts();
-  const accountFactoryConfig = await readAccountFactoryConfig();
-
-  for (const environmentConfig of accountFactoryConfig.accounts) {
-    const account = liveAccountList.find(
-      account => account.Email.toLowerCase() === environmentConfig.email.toLowerCase()
-    );
-
-    if (account) {
-      logger.info(
-        `Found AWS Organizations account with email ${environmentConfig.email} and profile name ${environmentConfig.profileName}`
-      );
-    } else if (!account) {
-      throw new Error(
-        `Could not find AWS Organizations account with email ${environmentConfig.email}`
-      );
-    }
-
-    try {
-      await createIAMUser(account.Id, options.username);
-    } catch (error) {
-      handleError(error);
-    }
-  }
-}
-
 async function handleCreateAccountsCommand(options) {
   config.environment = 'global';
   await printHeader();
@@ -746,12 +718,6 @@ async function main() {
     .description('🚀 Deploy accounts in the AWS Organization')
     .option('--username <username>', 'IAM username to create in each account', 'deploy')
     .action(handleCreateAccountsCommand);
-
-  program
-    .command('create-iam-users')
-    .description('🚀 Create IAM users in the AWS Organization')
-    .option('--username <username>', 'IAM username to create in each account', 'deploy')
-    .action(handleCreateIAMUsersCommand);
 
   program
     .command('setup-aws-profiles')
