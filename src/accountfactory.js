@@ -135,19 +135,6 @@ async function getCallerIdentity(stsClientOverride) {
   }
 }
 
-async function getConfig(environment) {
-  try {
-    const orgConfig = await readOrgConfig();
-    const config = orgConfig[environment];
-    if (!config) {
-      throw new Error(`No configuration found for environment: ${environment}`);
-    }
-    return config;
-  } catch (error) {
-    throw new Error(`Error reading configuration for ${environment}: ${error.message}`);
-  }
-}
-
 async function readAccountFactoryConfig() {
   try {
     const configPath = join(process.cwd(), 'accountfactory.json');
@@ -162,7 +149,6 @@ async function readAccountFactoryConfig() {
       `);
   }
 }
-
 
 async function createOrganizationAccount(email, accountName, roleName, client = null) {
 
