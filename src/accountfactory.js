@@ -9,7 +9,6 @@ import logger from './logger.js';
 
 import {
   CreateAccountCommand,
-  DescribeAccountCommand,
   DescribeCreateAccountStatusCommand,
   ListAccountsCommand,
   OrganizationsClient,
