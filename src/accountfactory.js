@@ -512,11 +512,7 @@ async function createNewUser(iamClient, username) {
 
 async function createIAMUser(accountId, username, stsClient = null) {
   try {
-    logger.info(
-      chalk.bgGreen.white.bold(
-        `createIAMUser(): Creating IAM user ${username} in account ${accountId}`
-      )
-    );
+    logger.info(`Creating IAM user ${username} in account ${accountId}`);
 
     // Get IAM client for target account
     const assumedIamClient = await getIAMClientForAccount(accountId, stsClient);
