@@ -34,7 +34,7 @@ import { readFile } from 'fs/promises';
 import { writeFile as fsWriteFile } from 'node:fs/promises';
 
 const APP_NAME = 'accountfactory';
-const APP_VERSION = '0.0.9';
+const APP_VERSION = '0.0.11';
 const ORGANIZATION_ROLE_NAME = 'OrganizationAccountAccessRole';
 const execAsync = promisify(exec);
 
@@ -139,6 +139,21 @@ async function getCallerIdentity(stsClientOverride) {
   } catch (error) {
     logger.error(`Failed to get caller identity: ${error.message}`);
     throw error;
+  }
+}
+
+async function readAccountFactoryConfig() {
+  try {
+    const configPath = join(process.cwd(), 'accountfactory.json');
+    const configContent = await readFile(configPath, 'utf8');
+    return JSON.parse(configContent);
+  } catch (error) {
+    throw new Error(`Failed to read account factory config: ${error.message}.
+
+      Please ensure 'accountfactory.json' exists in the current directory and is valid JSON.
+
+      See 'accountfactory.json.example' for an example configuration.
+      `);
   }
 }
 
@@ -638,21 +653,6 @@ async function handleCreateIAMUsersCommand(options) {
   }
 }
 
-async function describeAccount(accountId) {
-  const client = new OrganizationsClient();
-  const command = new DescribeAccountCommand({
-    AccountId: accountId,
-  });
-  const response = await client.send(command);
-  return response;
-}
-
-async function handleDescribeAccountCommand(options) {
-  await callGetCallerIdentity();
-  const account = await describeAccount(options.accountId);
-  console.log(account);
-}
-
 async function handleCreateAccountsCommand(options) {
   config.environment = 'global';
   await printHeader();
@@ -667,9 +667,6 @@ async function handleCreateAccountsCommand(options) {
     logger.error('No accounts found in accountfactory.json');
     process.exit(1);
   }
-
-  console.log(liveAccountList);
-  console.log('--------------------------------');
 
   for (const environmentConfig of accountFactoryConfig.accounts) {
 
@@ -716,14 +713,17 @@ async function generateSkeleton() {
     accounts: [
       {
         accountName: 'Shared Services',
+        profileName: 'myappname-shared',
         email: 'sharedservices@example.com',
       },
       {
         accountName: 'Staging',
+        profileName: 'myappname-staging',
         email: 'staging@example.com',
       },
       {
         accountName: 'Production',
+        profileName: 'myappname-production',
         email: 'production@example.com',
       },
     ],
@@ -759,12 +759,6 @@ async function main() {
     .command('generate-skeleton')
     .description('💀 Generate a skeleton accountfactory.json file')
     .action(handleGenerateSkeletonCommand);
-
-  program
-    .command('describe-account')
-    .description('🔍 Describe an account in the AWS Organization')
-    .option('--account-id <accountId>', 'Account ID to describe')
-    .action(handleDescribeAccountCommand);
 
   program
     .command('create-accounts')
