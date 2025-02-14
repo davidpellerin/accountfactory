@@ -538,18 +538,18 @@ async function createIAMUser(accountId, username, stsClient = null) {
         return false;
       }
     } else {
-      logger.info(`createIAMUser(): User ${username} does not exist in account ${accountId}. Creating new user...`);
+      logger.info(`User ${username} does not exist in account ${accountId}. Creating new user...`);
 
       // Create new user and get credentials
-      logger.info(`createIAMUser(): Creating new user ${username} in account ${accountId}`);
+      logger.info(`Creating new user ${username} in account ${accountId}`);
       const credentials = await createNewUser(assumedIamClient, username);
 
       // Store credentials in Secrets Manager
-      logger.info(`createIAMUser(): Storing credentials in Secrets Manager for user ${username} in account ${accountId}`);
+      logger.info(`Storing credentials in Secrets Manager for user ${username} in account ${accountId}`);
       await storeCredentialsInSecretsManager(accountId, username, credentials);
 
       // Display credential information
-      logger.info(`createIAMUser(): Displaying credential information for user ${username} in account ${accountId}`);
+      logger.info(`Displaying credential information for user ${username} in account ${accountId}`);
       await displayCredentialInfo(accountId, username);
 
       return true;
@@ -565,7 +565,7 @@ async function setupAwsProfile(accountId, username, profileName, secretsClient =
   try {
     const client = secretsClient || new SecretsManagerClient();
 
-    logger.info(`setupAwsProfile(): Getting existing credentials for user ${username} in account ${accountId}`);
+    logger.info(`Getting existing credentials for user ${username} in account ${accountId}`);
     const credentials = await getExistingCredentials(accountId, username, client);
     console.log(credentials);
 
@@ -667,6 +667,11 @@ async function handleCreateAccountsCommand(options) {
   for (const environmentConfig of accountFactoryConfig.accounts) {
 
     console.log(`checking for ${environmentConfig.email}`);
+
+    if (liveAccountList.some(account => account.Email === environmentConfig.email)) {
+      logger.info(`Account ${environmentConfig.email} already exists in AWS Organizations. Skipping account creation...`);
+      continue;
+    }
 
     const accountId = await createAccountWithRetry(environmentConfig.email, environmentConfig.accountName);
     if (accountId) {
