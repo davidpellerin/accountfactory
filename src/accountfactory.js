@@ -479,7 +479,6 @@ async function createNewUser(iamClient, username) {
     // Generate and set password
     const password = generatePassword();
     try {
-      logger.info(`createNewUser(): Creating login profile for user ${username} with password ${password}`);
       await iamClient.send(
         new CreateLoginProfileCommand({
           UserName: username,
@@ -493,7 +492,6 @@ async function createNewUser(iamClient, username) {
           `Login profile already exists for user ${username}, skipping password creation`
         );
       } else {
-        logger.error(`createNewUser(): Error in CreateLoginProfileCommand(): ${error.message}`);
         throw error;
       }
     }
