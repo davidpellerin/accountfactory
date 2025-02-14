@@ -633,7 +633,7 @@ async function handleCreateIAMUsersCommand(options) {
     try {
       await createIAMUser(account.Id, options.username);
     } catch (error) {
-      console.log(error);
+      handleError(error);
     }
   }
 }
