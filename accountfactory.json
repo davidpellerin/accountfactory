@@ -1,0 +1,24 @@
+{
+  "accounts": [
+    {
+      "accountName": "Shared Services",
+      "profileName": "owlsignals-shared",
+      "email": "owlsignalsshared@owlalerts.xyz"
+    },
+    {
+      "accountName": "Security",
+      "profileName": "owlsignals-security",
+      "email": "owlsignalssecurity@owlalerts.xyz"
+    },
+    {
+      "accountName": "Staging",
+      "profileName": "owlsignals-staging",
+      "email": "owlsignalsstaging@owlalerts.xyz"
+    },
+    {
+      "accountName": "Production",
+      "profileName": "owlsignals-production",
+      "email": "owlsignalsprod@owlalerts.xyz"
+    }
+  ]
+}
