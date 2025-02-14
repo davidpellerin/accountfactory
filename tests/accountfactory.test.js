@@ -55,8 +55,8 @@ describe('Configuration Management', () => {
     }));
 
     const module = await import('../src/accountfactory.js');
-    const { readOrgConfig } = module;
-    const config = await readOrgConfig();
+    const { readAccountFactoryConfig } = module;
+    const config = await readAccountFactoryConfig();
 
     expect(config).toEqual({
       shared: {
@@ -333,7 +333,7 @@ describe('AWS Client Integration', () => {
 });
 
 describe('IAM User Management', () => {
-  let checkIfUserExists;
+  let checkIfIamUserExists;
   let mockIamClient;
   const mockUser = {
     User: {
@@ -355,11 +355,11 @@ describe('IAM User Management', () => {
 
     // Import module after mock setup
     const module = await import('../src/accountfactory.js');
-    checkIfUserExists = module.checkIfUserExists;
+    checkIfIamUserExists = module.checkIfIamUserExists;
   });
 
   test('should return true when user exists', async () => {
-    await checkIfUserExists(mockIamClient, 'testUser');
+    await checkIfIamUserExists(mockIamClient, 'testUser');
 
     // expect(result).toBe(true);
     expect(mockIamClient.calls()).toHaveLength(1);
@@ -374,7 +374,7 @@ describe('IAM User Management', () => {
   test('should return false when user does not exist', async () => {
     mockIamClient.on(GetUserCommand).rejectsOnce(new Error('AWS service error'));
 
-    await checkIfUserExists(mockIamClient, 'nonexistentUser');
+    await checkIfIamUserExists(mockIamClient, 'nonexistentUser');
 
     // expect(result).toBe(false);
     expect(mockIamClient.calls()).toHaveLength(1);
@@ -393,7 +393,7 @@ describe('IAM User Management', () => {
 
     let error;
     try {
-      await checkIfUserExists(mockIamClient, 'testUser');
+      await checkIfIamUserExists(mockIamClient, 'testUser');
       throw new Error('AWS service error');
     } catch (e) {
       error = e;

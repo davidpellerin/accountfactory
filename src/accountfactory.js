@@ -778,9 +778,9 @@ async function main() {
 }
 
 export {
-  checkIfIamUserExists as checkIfUserExists,
+  checkIfIamUserExists,
   getCallerIdentity,
-  readAccountFactoryConfig as readOrgConfig,
+  readAccountFactoryConfig,
   generatePassword,
   createOrganizationAccount,
   createAccountWithRetry,
