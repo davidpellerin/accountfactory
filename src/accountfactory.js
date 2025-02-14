@@ -148,6 +148,22 @@ async function getConfig(environment) {
   }
 }
 
+async function readAccountFactoryConfig() {
+  try {
+    const configPath = join(process.cwd(), 'accountfactory.json');
+    const configContent = await readFile(configPath, 'utf8');
+    return JSON.parse(configContent);
+  } catch (error) {
+    throw new Error(`Failed to read account factory config: ${error.message}.
+
+      Please ensure 'accountfactory.json' exists in the current directory and is valid JSON.
+
+      See 'accountfactory.json.example' for an example configuration.
+      `);
+  }
+}
+
+
 async function createOrganizationAccount(email, accountName, roleName, client = null) {
 
   let orgClient;
@@ -596,71 +612,61 @@ async function handleListAccountsCommand() {
   }
 }
 
-async function handleAccountCreation(environment, accountList, username) {
-  const { email, accountName } = await getConfig(environment);
-  if (accountList && accountList.some(account => account.Email === email)) {
-    logger.info(
-      `Account ${email} already exists in AWS Organizations. Skipping account creation...`
-    );
-    const existingAccount = accountList.find(account => account.Email === email);
-    if (existingAccount) {
-      logger.info(`Creating IAM user in existing account ${existingAccount.Id}...`);
-      await createIAMUser(existingAccount.Id, username);
-    }
-    return;
-  }
-
-  logger.info(
-    `Creating ${environment} account with email ${email} and account name ${accountName}...`
-  );
-  const accountId = await createAccountWithRetry(email, accountName);
-  if (accountId) {
-    logger.info('Waiting 30 seconds for account to be ready before creating IAM user...');
-    await new Promise(resolve => setTimeout(resolve, 30000));
-    await createIAMUser(accountId, username);
-  }
-}
-
 async function handleCreateAccountsCommand(options) {
   config.environment = 'global';
   await printHeader();
   await confirm('Are you sure you want to create new accounts in AWS Organizations?');
 
   await initializeConfig();
-  const accountList = await listOrganizationsAccounts();
+  const liveAccountList = await listOrganizationsAccounts();
 
-  for (const environment of ['shared', 'staging', 'production']) {
-    await handleAccountCreation(environment, accountList, options.username);
+  const accountFactoryConfig = await readAccountFactoryConfig();
+
+  if (accountFactoryConfig.accounts.length === 0) {
+    logger.error('No accounts found in accountfactory.json');
+    process.exit(1);
+  }
+
+  for (const environmentConfig of accountFactoryConfig.accounts) {
+
+    console.log(`checking for ${environmentConfig.email}`);
+
+    if (liveAccountList.some(account => account.Email === environmentConfig.email)) {
+      logger.info(`Account ${environmentConfig.email} already exists in AWS Organizations. Skipping account creation...`);
+      continue;
+    }
+
+    const accountId = await createAccountWithRetry(environmentConfig.email, environmentConfig.accountName);
+    if (accountId) {
+      logger.info('Waiting 30 seconds for account to be ready before creating IAM user...');
+      await new Promise(resolve => setTimeout(resolve, 30000));
+      await createIAMUser(accountId, options.username);
+    }
+
   }
 }
 
 async function handleSetupAwsProfilesCommand(options) {
   await checkForTools(['aws']);
 
-  config.prefix = options.prefix;
-
   try {
     await initializeConfig();
     const accountList = await listOrganizationsAccounts();
+    const accountFactoryConfig = await readAccountFactoryConfig();
 
-    const sharedConfig = await getConfig('shared');
-    const stagingConfig = await getConfig('staging');
-    const prodConfig = await getConfig('production');
+    for (const environmentConfig of accountFactoryConfig.accounts) {
+      const account = accountList.find((account) => account.Email.toLowerCase() === environmentConfig.email.toLowerCase());
 
-    const sharedAccount = accountList.find(account => account.Email === sharedConfig.email);
-    const stagingAccount = accountList.find(account => account.Email === stagingConfig.email);
-    const prodAccount = accountList.find(account => account.Email === prodConfig.email);
-
-    // loop through accounts and check if they exist
-    [sharedAccount, stagingAccount, prodAccount].forEach(account => {
-      if (!account) {
-        throw new Error(`Could not find AWS Organizations account with email ${account.Email}`);
+      if (account) {
+        logger.info(`Found AWS Organizations account with email ${environmentConfig.email} and profile name ${environmentConfig.profileName}`);
       }
-    });
-
-    await setupAwsProfile(sharedAccount.Id, options.username, `${config.prefix}-shared`);
-    await setupAwsProfile(stagingAccount.Id, options.username, `${config.prefix}-staging`);
-    await setupAwsProfile(prodAccount.Id, options.username, `${config.prefix}-production`);
+      else if (!account) {
+        throw new Error(
+          `Could not find AWS Organizations account with email ${environmentConfig.email}`
+        );
+      }
+      await setupAwsProfile(account.Id, options.username, `${environmentConfig.profileName}`);
+    }
   } catch (error) {
     handleError(error);
   }
@@ -671,14 +677,17 @@ async function generateSkeleton() {
     accounts: [
       {
         accountName: 'Shared Services',
+        profileName: 'myappname-shared',
         email: 'sharedservices@example.com',
       },
       {
         accountName: 'Staging',
+        profileName: 'myappname-staging',
         email: 'staging@example.com',
       },
       {
         accountName: 'Production',
+        profileName: 'myappname-production',
         email: 'production@example.com',
       },
     ],
