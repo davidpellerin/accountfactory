@@ -42,6 +42,7 @@ const getLogDirectory = () => {
 const transports = [];
 
 const consoleTransport = new winston.transports.Console({
+  level: process.env.ACCOUNTFACTORY_LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.printf(({ timestamp, level, message }) => {

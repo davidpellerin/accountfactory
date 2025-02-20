@@ -1,0 +1,116 @@
+---
+description: Standards for writing unit tests in the project.
+globs: tests/**/*.test.js
+---
+# Unit Testing Standards
+
+Standards for writing unit tests in the project.
+
+<rule>
+name: unit_test_standards
+description: Enforces consistent unit testing patterns across the codebase
+filters:
+  # Match test files
+  - type: file_extension
+    pattern: "\\.test\\.js$"
+  # Match file creation/modification events
+  - type: event
+    pattern: "(file_create|file_modify)"
+
+actions:
+  - type: suggest
+    message: |
+      When creating unit tests:
+
+      1. Import structure:
+         ```javascript
+         import { beforeEach, describe, expect, jest, test } from '@jest/globals';
+         // For AWS services, use aws-sdk-client-mock
+         import { mockClient } from 'aws-sdk-client-mock';
+
+         // Create mocks at the top level
+         const serviceMock = mockClient(ServiceClient);
+         ```
+
+      2. Test structure:
+         ```javascript
+
+         // Reset mocks before each test
+         beforeEach(() => {
+           serviceMock.reset();
+         });
+
+         // Test structure
+         test('name goes here', async () => {
+           // First setup mocks
+           serviceMock.on(SomeCommand).resolves(testUser);
+
+           // Import the system under test in the test itself like this:
+           const module = await import('./service.js');
+
+           // Important: pass in the serviceMock into the service like this:
+           const service = new module.SomeService(serviceMock);
+
+           // Act:
+           const result = await service.someMethod();
+         }
+         ```
+
+      3. Test organization:
+         - Group related tests in describe blocks
+         - Use clear, descriptive test names
+         - Test both success and error cases
+         - Tests should be named like: should expected behavior when condition (eg: should return true when requesting a valid account)
+         - Do not leave trailing whitepsace
+         - Do not add timeouts to tests
+         - Run `npm run test` after creating tests to ensure they work correctly.
+
+      4. Mock assertions:
+         ```javascript
+         // Verify number of calls
+         expect(mockClient.calls()).toHaveLength(expectedCalls);
+
+         // Verify call arguments
+         const call = mockClient.calls()[0];
+         expect(call.args[0].constructor.name).toBe('CommandName');
+         expect(call.args[0].input).toEqual({
+           expectedParam: 'expectedValue'
+         });
+         ```
+
+      5. Error handling:
+         - Test error cases explicitly
+         - Verify error types and messages
+         - Use try/catch blocks for error assertions
+
+      6. Test file naming:
+         - Place tests next to source files
+         - Name pattern: {sourceFile}.test.js
+
+examples:
+  - input: |
+      // Bad: Missing mock reset
+      const serviceMock = mockClient(ServiceClient);
+
+      test('my test', () => {
+        // Test without proper setup
+      });
+
+      // Good: Complete test setup
+      const serviceMock = mockClient(ServiceClient);
+
+      beforeEach(() => {
+        serviceMock.reset();
+      });
+
+      describe('Feature', () => {
+        test('should succeed when valid input', () => {
+          // Test implementation
+        });
+      });
+    output: "Properly structured test file"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>
