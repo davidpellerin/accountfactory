@@ -4,8 +4,6 @@ export class SetupProfilesService {
   }
 
   async handleSetupAwsProfilesCommand(options) {
-    await checkForTools(['aws']);
-
     try {
       await callGetCallerIdentity();
       const liveAccountList = await listOrganizationsAccounts();
