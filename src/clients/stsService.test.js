@@ -46,7 +46,7 @@ describe('STSService', () => {
     test('should create instance when stsClient is provided', async () => {
       const { STSService } = await import('./stsService.js');
       expect(() => new STSService(stsClientMock)).not.toThrow();
-      expect(mockDebug).toHaveBeenCalledWith('STSService constructor called');
+      expect(mockDebug).toHaveBeenCalledWith('STSService initialized with all required dependencies');
     });
   });
 
@@ -118,4 +118,4 @@ describe('STSService', () => {
       expect(mockError).toHaveBeenCalledWith(`Failed to get caller identity: ${errorMessage}`);
     });
   });
-}); 
+});

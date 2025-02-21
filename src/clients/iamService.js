@@ -18,9 +18,19 @@ export const createAwsIAMClient = () => {
 
 export class IAMService {
   constructor(iamClient, secretsManagerClient, stsClient) {
+    if (!iamClient) {
+      throw new Error('IAMClient is required');
+    }
+    if (!secretsManagerClient) {
+      throw new Error('SecretsManagerClient is required');
+    }
+    if (!stsClient) {
+      throw new Error('STSClient is required');
+    }
     this.iamClient = iamClient;
     this.secretsManagerClient = secretsManagerClient;
     this.stsClient = stsClient;
+    logger.debug('IAMService initialized with all required dependencies');
   }
 
   async createNewUser(username) {
@@ -111,7 +121,11 @@ export class IAMService {
         logger.info(
           `Storing credentials in Secrets Manager for user ${username} in account ${accountId}`
         );
-        await this.secretsManagerClient.storeCredentialsInSecretsManager(accountId, username, credentials);
+        await this.secretsManagerClient.storeCredentialsInSecretsManager(
+          accountId,
+          username,
+          credentials
+        );
 
         return true;
       }
