@@ -294,9 +294,7 @@ describe('IAMService', () => {
     });
 
     test('should create new user when user does not exist', async () => {
-      // Mock getIAMClientForAccount
-      const assumedIamMock = mockClient(IAMClient);
-      assumedIamMock
+      iamMock
         .on(GetUserCommand).rejects({ name: 'NoSuchEntityException' })
         .on(CreateLoginProfileCommand).resolves({})
         .on(AttachUserPolicyCommand).resolves({})
@@ -310,7 +308,7 @@ describe('IAMService', () => {
       mockGeneratePassword.mockReturnValue(testCredentials.password);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(assumedIamMock, secretsManagerMock, stsMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const result = await service.createIAMUser(testAccountId, testUsername);
 
@@ -333,11 +331,10 @@ describe('IAMService', () => {
     });
 
     test('should handle existing user', async () => {
-      const assumedIamMock = mockClient(IAMClient);
-      assumedIamMock.on(GetUserCommand).resolves(testUser);
+      iamMock.on(GetUserCommand).resolves(testUser);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(assumedIamMock, secretsManagerMock, stsMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const result = await service.createIAMUser(testAccountId, testUsername);
 
@@ -350,11 +347,10 @@ describe('IAMService', () => {
 
     test('should throw error on AWS failure', async () => {
       const error = new Error('AWS error');
-      const assumedIamMock = mockClient(IAMClient);
-      assumedIamMock.on(GetUserCommand).rejects(error);
+      iamMock.on(GetUserCommand).rejects(error);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(assumedIamMock, secretsManagerMock, stsMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       await expect(service.createIAMUser(testAccountId, testUsername))
         .rejects.toThrow('AWS error');
