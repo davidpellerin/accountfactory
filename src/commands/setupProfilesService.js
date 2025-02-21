@@ -1,77 +1,70 @@
+import { STSClient } from '@aws-sdk/client-sts';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { exec } from 'child_process';
+import logger from '../utils/logger.js';
+
 export class SetupProfilesService {
-  constructor(client = null) {
-    this.client = client || new STSClient();
+  constructor(stsClient, secretsManagerClient) {
+    if (!stsClient) throw new Error('STSClient is required');
+    if (!secretsManagerClient) throw new Error('SecretsManagerClient is required');
+    this.stsClient = stsClient;
+    this.secretsManagerClient = secretsManagerClient;
   }
 
-  async handleSetupAwsProfilesCommand(options) {
+  async setupAwsProfile(accountConfig, liveAccountList, options) {
     try {
-      await callGetCallerIdentity();
-      const liveAccountList = await listOrganizationsAccounts();
-      const accountFactoryConfig = await readAccountFactoryConfig();
+      // Find the matching account from live accounts
+      const account = liveAccountList.find(
+        acc => acc.Email.toLowerCase() === accountConfig.email.toLowerCase()
+      );
 
-      for (const environmentConfig of accountFactoryConfig.accounts) {
-        const account = liveAccountList.find(
-          account => account.Email.toLowerCase() === environmentConfig.email.toLowerCase()
+      if (!account) {
+        throw new Error(
+          `Could not find AWS Organizations account with email ${accountConfig.email}`
         );
-
-        if (account) {
-          logger.info(
-            `Found AWS Organizations account with email ${environmentConfig.email} and profile name ${environmentConfig.profileName}`
-          );
-        } else if (!account) {
-          throw new Error(
-            `Could not find AWS Organizations account with email ${environmentConfig.email}`
-          );
-        }
-        await setupAwsProfile(account.Id, options.username, `${environmentConfig.profileName}`);
       }
-    } catch (error) {
-      handleError(error);
-    }
-  }
 
-  async setupAwsProfile(accountId, username, profileName, secretsClient = null) {
-    try {
-      const client = secretsClient || new SecretsManagerClient();
-
-      logger.info(`Getting existing credentials for user ${username} in account ${accountId}`);
-      const credentials = await getExistingCredentials(accountId, username, client);
+      logger.info(`Getting existing credentials for user ${options.username} in account ${account.Id}`);
+      const credentials = await this.secretsManagerClient.getExistingCredentials(
+        account.Id, 
+        options.username
+      );
 
       if (!credentials) {
         throw new Error(
-          `No credentials found for user ${username} in account ${accountId}. ` +
-          'Please run "accountfactory create-accounts --username ' + username + '" first to create the IAM user and store credentials.'
+          `No credentials found for user ${options.username} in account ${account.Id}. ` +
+          `Please run "accountfactory create-accounts --username ${options.username}" first to create the IAM user and store credentials.`
         );
       }
 
       // Run AWS configure commands to set up the profile
       const commands = [
-        `aws configure set aws_access_key_id ${credentials.access_key_id} --profile ${profileName}`,
-        `aws configure set aws_secret_access_key ${credentials.secret_access_key} --profile ${profileName}`,
-        `aws configure set region us-east-1 --profile ${profileName}`,
-        `aws configure set output json --profile ${profileName}`,
+        `aws configure set aws_access_key_id ${credentials.access_key_id} --profile ${accountConfig.profileName}`,
+        `aws configure set aws_secret_access_key ${credentials.secret_access_key} --profile ${accountConfig.profileName}`,
+        `aws configure set region us-east-1 --profile ${accountConfig.profileName}`,
+        `aws configure set output json --profile ${accountConfig.profileName}`,
       ];
 
       for (const command of commands) {
-        const { stderr } = await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
           exec(command, (error, stdout, stderr) => {
             if (error) {
               reject(error);
             }
-            resolve({ stdout, stderr });
+            if (stderr) {
+              reject(new Error(stderr));
+            }
+            resolve(stdout);
           });
         });
-
-        if (stderr) {
-          throw new Error(`Error running command ${command}: ${stderr}`);
-        }
       }
 
-      logger.success(`Successfully configured AWS profile '${profileName}' 🎉`);
-      logger.info(`You can now use this profile with: aws --profile ${profileName} [command]`);
+      logger.success(`Successfully configured AWS profile '${accountConfig.profileName}' 🎉`);
+      logger.info(`You can now use this profile with: aws --profile ${accountConfig.profileName} [command]`);
     } catch (error) {
       logger.error(`Failed to set up AWS profile: ${error.message}`);
       throw error;
     }
   }
+
 }
