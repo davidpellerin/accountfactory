@@ -123,41 +123,6 @@ export class OrganizationsService {
     }
   }
 
-  async createAccountWithRetry(email, accountName) {
-    let retryCount = 0;
-
-    while (retryCount < MAX_ACCOUNT_CREATION_RETRIES) {
-      try {
-        const createAccountStatusId = await this.#createOrganizationAccount(
-          email,
-          accountName,
-          ORGANIZATION_ROLE_NAME
-        );
-        logger.info(`Account creation initiated with status ID: ${createAccountStatusId}`);
-
-        return await this.pollAccountCreationStatus(createAccountStatusId);
-      } catch (error) {
-        if (error.name === 'ConcurrentModificationException') {
-          retryCount++;
-          const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-          logger.warning(
-            `Concurrent modification detected. Retrying in ${
-              delay / 1000
-            } seconds... (Attempt ${retryCount} of ${MAX_ACCOUNT_CREATION_RETRIES})`
-          );
-          await new Promise(resolve => setTimeout(resolve, delay));
-        } else {
-          logger.error(`Failed to create account: ${error.message}`);
-          throw error;
-        }
-      }
-    }
-
-    throw new Error(
-      `Failed to create account after ${MAX_ACCOUNT_CREATION_RETRIES} retries due to concurrent modifications.`
-    );
-  }
-
   async accountExists(email) {
     const accounts = await this.listOrganizationsAccounts();
     return accounts.some(account => account.Email.toLowerCase() === email.toLowerCase());
