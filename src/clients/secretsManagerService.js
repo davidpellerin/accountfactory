@@ -13,9 +13,9 @@ export const createAwsSecretsManagerClient = () => {
 
 export class SecretsManagerService {
   constructor(secretsManagerClient) {
-    logger.debug('SecretsManagerService constructor called');
     if (!secretsManagerClient) {throw new Error('SecretsManagerClient is required');}
     this.client = secretsManagerClient;
+    logger.debug('SecretsManagerService initialized with all required dependencies');
   }
 
   async storeCredentialsInSecretsManager(accountId, username, credentials) {

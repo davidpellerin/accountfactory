@@ -7,6 +7,10 @@ import {
   GetUserCommand,
   IAMClient
 } from '@aws-sdk/client-iam';
+
+import {
+  SecretsManagerClient,
+} from '@aws-sdk/client-secrets-manager';
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import { ADMIN_POLICY_ARN, ORGANIZATION_ROLE_NAME } from '../constants.js';
 
@@ -35,6 +39,7 @@ jest.unstable_mockModule('../utils/passwordService.js', () => ({
 
 const iamMock = mockClient(IAMClient);
 const stsMock = mockClient(STSClient);
+const secretsManagerMock = mockClient(SecretsManagerClient);
 
 beforeEach(() => {
   iamMock.reset();
@@ -96,7 +101,7 @@ describe('IAMService', () => {
         .on(CreateAccessKeyCommand).resolves(testAccessKey);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const result = await service.createNewUser('newUser');
 
@@ -107,7 +112,7 @@ describe('IAMService', () => {
       });
 
       expect(iamMock.calls()).toHaveLength(3);
-      
+
       const loginCall = iamMock.calls()[0];
       expect(loginCall.args[0].constructor.name).toBe('CreateLoginProfileCommand');
       expect(loginCall.args[0].input).toEqual({
@@ -133,14 +138,14 @@ describe('IAMService', () => {
     test('should handle existing login profile', async () => {
       const error = new Error('Profile exists');
       error.name = 'EntityAlreadyExists';
-      
+
       iamMock
         .on(CreateLoginProfileCommand).rejects(error)
         .on(AttachUserPolicyCommand).resolves({})
         .on(CreateAccessKeyCommand).resolves(testAccessKey);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const result = await service.createNewUser('existingUser');
 
@@ -160,7 +165,7 @@ describe('IAMService', () => {
       iamMock.on(CreateLoginProfileCommand).rejects(error);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       await expect(service.createNewUser('newUser')).rejects.toThrow('AWS error');
       expect(mockError).toHaveBeenCalledWith('Error creating new user: AWS error');
@@ -172,7 +177,7 @@ describe('IAMService', () => {
       iamMock.on(GetUserCommand).resolves(testUser);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const doesUserExist = await service.checkIfIamUserExists(testUser.User.UserName);
 
@@ -192,7 +197,7 @@ describe('IAMService', () => {
       iamMock.on(GetUserCommand).rejects(error);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const doesUserExist = await service.checkIfIamUserExists('nonexistentUser');
 
@@ -210,7 +215,7 @@ describe('IAMService', () => {
       iamMock.on(GetUserCommand).rejects(new Error('AWS service error'));
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       await expect(service.checkIfIamUserExists(testUser.User.UserName))
         .rejects.toThrow('AWS service error');
@@ -231,7 +236,7 @@ describe('IAMService', () => {
       stsMock.on(AssumeRoleCommand).resolves(testCredentials);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock, null, stsMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       const client = await service.getIAMClientForAccount(testAccountId);
 
@@ -252,7 +257,7 @@ describe('IAMService', () => {
       stsMock.on(AssumeRoleCommand).rejects(error);
 
       const { IAMService } = await import('./iamService.js');
-      const service = new IAMService(iamMock, null, stsMock);
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       await expect(service.getIAMClientForAccount(testAccountId))
         .rejects.toThrow('Failed to assume role');

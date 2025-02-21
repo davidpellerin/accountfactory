@@ -17,7 +17,7 @@ export class OrganizationsService {
     if (!organizationsClient) {throw new Error('OrganizationsClient is required');}
     this.client = organizationsClient;
     this.DELAY_BETWEEN_OPERATIONS = delayBetweenOperations;
-    logger.debug('OrganizationsService constructor called');
+    logger.debug('OrganizationsService initialized with all required dependencies');
   }
 
   async #createOrganizationAccount(email, accountName, roleName) {

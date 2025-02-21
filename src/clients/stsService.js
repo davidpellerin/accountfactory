@@ -11,7 +11,7 @@ export class STSService {
   constructor(stsClient) {
     if (!stsClient) {throw new Error('STSClient is required');}
     this.stsClient = stsClient;
-    logger.debug('STSService constructor called');
+    logger.debug('STSService initialized with all required dependencies');
   }
 
   async getCallerIdentity() {
