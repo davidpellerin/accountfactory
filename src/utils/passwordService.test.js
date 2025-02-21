@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import { PasswordService } from './passwordService.js';
 
 describe('PasswordService', () => {

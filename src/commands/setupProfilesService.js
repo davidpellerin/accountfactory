@@ -1,5 +1,3 @@
-import { STSClient } from '@aws-sdk/client-sts';
-import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { exec } from 'child_process';
 import logger from '../utils/logger.js';
 import { DEFAULT_REGION } from '../constants.js';
@@ -27,7 +25,7 @@ export class SetupProfilesService {
 
       logger.info(`Getting existing credentials for user ${options.username} in account ${account.Id}`);
       const credentials = await this.secretsManagerClient.getExistingCredentials(
-        account.Id, 
+        account.Id,
         options.username
       );
 

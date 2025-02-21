@@ -44,6 +44,7 @@ export class CommandHandler {
       await this.stsService.getCallerIdentity();
       const accountList = await this.organizationsService.listOrganizationsAccounts();
       if (accountList && accountList.length > 0) {
+        // eslint-disable-next-line no-console
         console.table(accountList);
       } else {
         logger.info('No accounts found in AWS Organizations');

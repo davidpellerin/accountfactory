@@ -89,8 +89,7 @@ export class IAMService {
     try {
       logger.info(`Creating IAM user ${username} in account ${accountId}`);
 
-      // Get IAM client for target account
-      const assumedIamClient = await this.getIAMClientForAccount(accountId);
+      await this.getIAMClientForAccount(accountId);
 
       // Check if user exists and handle accordingly
       const userExists = await this.checkIfIamUserExists(username);

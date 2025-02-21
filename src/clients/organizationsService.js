@@ -5,11 +5,6 @@ import {
   OrganizationsClient,
 } from '@aws-sdk/client-organizations';
 import logger from '../utils/logger.js';
-import {
-  INITIAL_RETRY_DELAY,
-  MAX_ACCOUNT_CREATION_RETRIES,
-  ORGANIZATION_ROLE_NAME,
-} from '../constants.js';
 
 // Factory function to create an Organizations client
 export const createAwsOrganizationsClient = () => {
