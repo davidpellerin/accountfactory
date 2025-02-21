@@ -63,7 +63,7 @@ export class CommandHandler {
       for (const account of accountList) {
         const password = await this.secretsManagerService.getExistingCredentials(account.Id, 'deploy');
         logger.info(`${account.Id} - ${account.Email} - ${account.Status}`);
-        console.log(password);
+        logger.info(password);
       }
     } catch (error) {
       logger.error(`Command failed: ${error.message}`);
