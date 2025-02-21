@@ -1,0 +1,32 @@
+---
+description: Auto Lint
+globs: *.js
+---
+ # Auto Lint Rule
+
+This rule automatically runs linting and fixes any issues when detected.
+
+<rule>
+name: auto_lint
+description: Automatically runs linting and fixes any issues if found
+filters:
+  # Match any JavaScript/TypeScript files
+  - type: file_extension
+    pattern: "\\.(js|jsx|ts|tsx)$"
+  # Match file changes
+  - type: event
+    pattern: "file_change"
+
+actions:
+  - type: run_command
+    command: "npm run lint"
+    on_error:
+      - type: run_command
+        command: "npm run lint:fix"
+        message: "Linting issues found. Running auto-fix..."
+    message: "Running linting check..."
+
+metadata:
+  priority: medium
+  version: 1.0
+</rule>

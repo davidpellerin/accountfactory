@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import accountfactory from '../src/accountfactory.js';
-import logger from '../src/logger.js';
+import logger from '../src/utils/logger.js';
 
 accountfactory().catch(error => {
   logger.error('Error:', error);
