@@ -16,14 +16,3 @@ export const ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess';
  */
 export const MAX_ACCOUNT_CREATION_RETRIES = 5;
 export const INITIAL_RETRY_DELAY = 1000; // 1 second
-
-/**
- * Environment configurations
- */
-export const ENV_ENABLE_LOGGING = 'ACCOUNTFACTORY_ENABLE_LOGGING';
-
-/**
- * Secret naming patterns
- */
-export const SECRET_NAME_PREFIX = 'iam-user';
-export const SECRET_NAME_PATTERN = `${SECRET_NAME_PREFIX}/%s/%s`; // accountId/username
