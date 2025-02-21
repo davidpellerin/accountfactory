@@ -2,6 +2,7 @@ import { STSClient } from '@aws-sdk/client-sts';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { exec } from 'child_process';
 import logger from '../utils/logger.js';
+import { DEFAULT_REGION } from '../constants.js';
 
 export class SetupProfilesService {
   constructor(stsClient, secretsManagerClient) {
@@ -41,7 +42,7 @@ export class SetupProfilesService {
       const commands = [
         `aws configure set aws_access_key_id ${credentials.access_key_id} --profile ${accountConfig.profileName}`,
         `aws configure set aws_secret_access_key ${credentials.secret_access_key} --profile ${accountConfig.profileName}`,
-        `aws configure set region us-east-1 --profile ${accountConfig.profileName}`,
+        `aws configure set region ${DEFAULT_REGION} --profile ${accountConfig.profileName}`,
         `aws configure set output json --profile ${accountConfig.profileName}`,
       ];
 
