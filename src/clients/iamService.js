@@ -7,7 +7,7 @@ import {
 } from '@aws-sdk/client-iam';
 import { AssumeRoleCommand } from '@aws-sdk/client-sts';
 import logger from '../utils/logger.js';
-import { ORGANIZATION_ROLE_NAME, ADMIN_POLICY_ARN } from '../constants.js';
+import { ADMIN_POLICY_ARN, ORGANIZATION_ROLE_NAME } from '../constants.js';
 import { PasswordService } from '../utils/passwordService.js';
 
 // Factory function to create an IAM client

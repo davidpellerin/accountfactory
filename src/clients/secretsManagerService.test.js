@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { mockClient } from 'aws-sdk-client-mock';
 import {
-  SecretsManagerClient,
   CreateSecretCommand,
-  PutSecretValueCommand,
   GetSecretValueCommand,
+  PutSecretValueCommand,
+  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 
 const secretsManagerMock = mockClient(SecretsManagerClient);

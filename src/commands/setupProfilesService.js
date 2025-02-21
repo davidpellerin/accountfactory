@@ -6,8 +6,8 @@ import { DEFAULT_REGION } from '../constants.js';
 
 export class SetupProfilesService {
   constructor(stsClient, secretsManagerClient) {
-    if (!stsClient) throw new Error('STSClient is required');
-    if (!secretsManagerClient) throw new Error('SecretsManagerClient is required');
+    if (!stsClient) {throw new Error('STSClient is required');}
+    if (!secretsManagerClient) {throw new Error('SecretsManagerClient is required');}
     this.stsClient = stsClient;
     this.secretsManagerClient = secretsManagerClient;
   }

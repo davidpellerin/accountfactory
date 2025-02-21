@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { mockClient } from 'aws-sdk-client-mock';
-import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
+import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 
 // Mock the logger
 const mockDebug = jest.fn();

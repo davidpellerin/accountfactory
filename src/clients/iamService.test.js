@@ -7,8 +7,8 @@ import {
   GetUserCommand,
   IAMClient
 } from '@aws-sdk/client-iam';
-import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
-import { ORGANIZATION_ROLE_NAME, ADMIN_POLICY_ARN } from '../constants.js';
+import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
+import { ADMIN_POLICY_ARN, ORGANIZATION_ROLE_NAME } from '../constants.js';
 
 // Mock the logger
 const mockDebug = jest.fn();

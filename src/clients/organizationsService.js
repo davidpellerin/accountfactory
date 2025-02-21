@@ -1,14 +1,14 @@
 import {
-  OrganizationsClient,
   CreateAccountCommand,
   DescribeCreateAccountStatusCommand,
   ListAccountsCommand,
+  OrganizationsClient,
 } from '@aws-sdk/client-organizations';
 import logger from '../utils/logger.js';
 import {
-  ORGANIZATION_ROLE_NAME,
-  MAX_ACCOUNT_CREATION_RETRIES,
   INITIAL_RETRY_DELAY,
+  MAX_ACCOUNT_CREATION_RETRIES,
+  ORGANIZATION_ROLE_NAME,
 } from '../constants.js';
 
 // Factory function to create an Organizations client
@@ -19,7 +19,7 @@ export const createAwsOrganizationsClient = () => {
 
 export class OrganizationsService {
   constructor(organizationsClient, delayBetweenOperations = 15000) {
-    if (!organizationsClient) throw new Error('OrganizationsClient is required');
+    if (!organizationsClient) {throw new Error('OrganizationsClient is required');}
     this.client = organizationsClient;
     this.DELAY_BETWEEN_OPERATIONS = delayBetweenOperations;
     logger.debug('OrganizationsService constructor called');

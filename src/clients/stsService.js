@@ -9,7 +9,7 @@ export const createAwsSTSClient = () => {
 
 export class STSService {
   constructor(stsClient) {
-    if (!stsClient) throw new Error('STSClient is required');
+    if (!stsClient) {throw new Error('STSClient is required');}
     this.stsClient = stsClient;
     logger.debug('STSService constructor called');
   }
