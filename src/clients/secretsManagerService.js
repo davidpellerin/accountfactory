@@ -2,16 +2,10 @@ import {
   CreateSecretCommand,
   GetSecretValueCommand,
   PutSecretValueCommand,
-  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { Logger } from "../utils/logger.js";
 
 const logger = new Logger();
-
-export const createAwsSecretsManagerClient = () => {
-  logger.debug('Creating AWS SecretsManagerClient');
-  return new SecretsManagerClient({ region: 'us-east-1' });
-};
 
 export class SecretsManagerService {
   constructor(secretsManagerClient, injectedLogger = logger) {

@@ -2,17 +2,10 @@ import {
   CreateAccountCommand,
   DescribeCreateAccountStatusCommand,
   ListAccountsCommand,
-  OrganizationsClient,
 } from '@aws-sdk/client-organizations';
 import { Logger } from "../utils/logger.js";
 
 const logger = new Logger();
-
-// Factory function to create an Organizations client
-export const createAwsOrganizationsClient = () => {
-  logger.debug('Creating AWS OrganizationsClient');
-  return new OrganizationsClient();
-};
 
 export class OrganizationsService {
   constructor(organizationsClient, delayBetweenOperations = 15000, injectedLogger = logger) {

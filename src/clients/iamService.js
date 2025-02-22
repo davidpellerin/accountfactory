@@ -12,12 +12,6 @@ import { Logger } from "../utils/logger.js";
 
 const logger = new Logger();
 
-// Factory function to create an IAM client
-export const createAwsIAMClient = () => {
-  logger.debug('Creating AWS IAMClient');
-  return new IAMClient();
-};
-
 export class IAMService {
   constructor(iamClient, secretsManagerClient, stsClient, injectedLogger = logger) {
     if (!iamClient) {

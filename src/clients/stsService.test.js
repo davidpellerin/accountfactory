@@ -12,14 +12,6 @@ describe('STSService', () => {
     testLogger = createTestLogger();
   });
 
-  describe('createAwsSTSClient', () => {
-    test('should create and return a new STSClient', async () => {
-      const { createAwsSTSClient } = await import('./stsService.js');
-      const client = createAwsSTSClient();
-      expect(client).toBeInstanceOf(STSClient);
-    });
-  });
-
   describe('constructor', () => {
     test('should throw error when stsClient is not provided', async () => {
       const { STSService } = await import('./stsService.js');

@@ -1,29 +1,31 @@
 #!/usr/bin/env node
 
 import { APP_NAME, APP_VERSION } from './constants.js';
-import { logger } from './utils/logger.js';
 import { program } from 'commander';
 import { CommandHandler } from './commands/commandHandler.js';
-import { createAwsSTSClient } from './clients/stsService.js';
-import { createAwsIAMClient } from './clients/iamService.js';
-import { createAwsOrganizationsClient } from './clients/organizationsService.js';
-import { createAwsSecretsManagerClient } from './clients/secretsManagerService.js';
+import { STSClient } from '@aws-sdk/client-sts';
+import { IAMClient } from '@aws-sdk/client-iam';
+import { OrganizationsClient } from '@aws-sdk/client-organizations';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { Logger } from '../src/utils/logger.js';
+
+const logger = new Logger();
 
 async function main() {
   logger.debug('Initializing services...');
 
   // Initialize all clients and services
-  const stsClient = createAwsSTSClient();
-  const iamClient = createAwsIAMClient();
-  const awsOrganizationsClient = createAwsOrganizationsClient();
-  const secretsManagerClient = createAwsSecretsManagerClient();
+  const awsOrganizationsClient = new OrganizationsClient();
+  const awsIamClient = new IAMClient();
+  const awsStsClient = new STSClient();
+  const awsSecretsManagerClient = new SecretsManagerClient();
 
   // Create command handler with dependencies
   const commandHandler = new CommandHandler(
     awsOrganizationsClient,
-    iamClient,
-    stsClient,
-    secretsManagerClient
+    awsIamClient,
+    awsStsClient,
+    awsSecretsManagerClient
   );
 
   program.name(APP_NAME).description('AWS Infrastructure deployment tool').version(APP_VERSION);

@@ -1,13 +1,16 @@
 import { exec } from 'child_process';
-import logger from '../utils/logger.js';
 import { DEFAULT_REGION } from '../constants.js';
+import { Logger } from "../utils/logger.js";
+
+const logger = new Logger();
 
 export class SetupProfilesService {
-  constructor(stsClient, secretsManagerClient) {
+  constructor(stsClient, secretsManagerClient, injectedLogger = logger) {
     if (!stsClient) {throw new Error('STSClient is required');}
     if (!secretsManagerClient) {throw new Error('SecretsManagerClient is required');}
     this.stsClient = stsClient;
     this.secretsManagerClient = secretsManagerClient;
+    this.logger = injectedLogger;
   }
 
   async setupAwsProfile(accountConfig, liveAccountList, options) {
@@ -23,7 +26,7 @@ export class SetupProfilesService {
         );
       }
 
-      logger.info(`Getting existing credentials for user ${options.username} in account ${account.Id}`);
+      this.logger.info(`Getting existing credentials for user ${options.username} in account ${account.Id}`);
       const credentials = await this.secretsManagerClient.getExistingCredentials(
         account.Id,
         options.username
@@ -58,10 +61,10 @@ export class SetupProfilesService {
         });
       }
 
-      logger.success(`Successfully configured AWS profile '${accountConfig.profileName}' 🎉`);
-      logger.info(`You can now use this profile with: aws --profile ${accountConfig.profileName} [command]`);
+      this.logger.success(`Successfully configured AWS profile '${accountConfig.profileName}' 🎉`);
+      this.logger.info(`You can now use this profile with: aws --profile ${accountConfig.profileName} [command]`);
     } catch (error) {
-      logger.error(`Failed to set up AWS profile: ${error.message}`);
+      this.logger.error(`Failed to set up AWS profile: ${error.message}`);
       throw error;
     }
   }
