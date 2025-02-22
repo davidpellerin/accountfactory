@@ -8,10 +8,11 @@ export const createAwsSTSClient = () => {
 };
 
 export class STSService {
-  constructor(stsClient) {
+  constructor(stsClient, injectedLogger = logger) {
     if (!stsClient) {throw new Error('STSClient is required');}
     this.stsClient = stsClient;
-    logger.debug('STSService initialized with all required dependencies');
+    this.logger = injectedLogger;
+    this.logger.debug('STSService initialized with all required dependencies');
   }
 
   async getCallerIdentity() {
@@ -24,13 +25,13 @@ export class STSService {
       }
 
       if (response.Arn.endsWith(':root')) {
-        logger.warning('Warning: Running as root user. Consider using an IAM user instead.');
+        this.logger.warning('Warning: Running as root user. Consider using an IAM user instead.');
       }
 
-      logger.info(`AWS account ID: ${response.Account}`);
+      this.logger.info(`AWS account ID: ${response.Account}`);
       return response;
     } catch (error) {
-      logger.error(`Failed to get caller identity: ${error.message}`);
+      this.logger.error(`Failed to get caller identity: ${error.message}`);
       throw error;
     }
   }

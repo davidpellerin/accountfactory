@@ -2,7 +2,7 @@
  * Application metadata
  */
 export const APP_NAME = 'accountfactory';
-export const APP_VERSION = '0.0.15';
+export const APP_VERSION = '0.0.16';
 
 /**
  * AWS specific constants

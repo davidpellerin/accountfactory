@@ -4,89 +4,122 @@ import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
-const customLevels = {
-  levels: {
-    error: 0,
-    warning: 1,
-    success: 2,
-    info: 3,
-    debug: 4,
-  },
-  colors: {
-    error: 'red',
-    warning: 'yellow',
-    success: 'green',
-    info: 'white',
-    debug: 'gray',
-  },
-};
+export class Logger {
+  constructor(options = {}) {
+    const {
+      level = process.env.ACCOUNTFACTORY_LOG_LEVEL || 'info',
+      silent = process.env.NODE_ENV === 'test',
+      enableFileLogging = process.env.ACCOUNTFACTORY_ENABLE_LOGGING === 'true'
+    } = options;
 
-const createLogDirectory = () => {
-  const logDirectory = getLogDirectory();
-  if (!existsSync(logDirectory)) {
-    mkdirSync(logDirectory, { recursive: true });
+    this.customLevels = {
+      levels: {
+        error: 0,
+        warning: 1,
+        success: 2,
+        info: 3,
+        debug: 4,
+      },
+      colors: {
+        error: 'red',
+        warning: 'yellow',
+        success: 'green',
+        info: 'white',
+        debug: 'gray',
+      }
+    };
+
+    this.transports = this.createTransports({ level, silent, enableFileLogging });
+    this.logger = this.createLogger();
   }
-};
 
-const getLogDirectory = () => {
-  if (process.platform === 'win32') {
-    return join(
-      process.env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local'),
-      'accountfactory',
-      'logs'
+  createTransports({ level, silent, enableFileLogging }) {
+    const transports = [];
+
+    // Console transport
+    transports.push(
+      new winston.transports.Console({
+        level,
+        silent,
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.printf(({ timestamp, level, message }) => {
+            const color = {
+              debug: chalk.gray,
+              info: chalk.white,
+              success: chalk.green,
+              error: chalk.red,
+              warning: chalk.yellow,
+            }[level] || chalk.white;
+            return color(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
+          })
+        )
+      })
     );
+
+    // File transport (optional)
+    if (enableFileLogging) {
+      const logDirectory = this.getLogDirectory();
+      this.ensureLogDirectory(logDirectory);
+
+      transports.push(
+        new winston.transports.File({
+          filename: join(logDirectory, 'accountfactory.log')
+        })
+      );
+    }
+
+    return transports;
   }
-  return join(homedir(), '.local', 'state', 'accountfactory', 'logs');
-};
 
-const transports = [];
+  createLogger() {
+    return winston.createLogger({
+      levels: this.customLevels.levels,
+      transports: this.transports
+    });
+  }
 
-const consoleTransport = new winston.transports.Console({
-  level: process.env.ACCOUNTFACTORY_LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
-      const color =
-        {
-          debug: chalk.gray,
-          info: chalk.white,
-          success: chalk.green,
-          error: chalk.red,
-          warning: chalk.yellow,
-        }[level] || chalk.white;
-      return color(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
-    })
-  ),
-  silent: process.env.NODE_ENV === 'test',
-});
+  getLogDirectory() {
+    if (process.platform === 'win32') {
+      return join(
+        process.env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local'),
+        'accountfactory',
+        'logs'
+      );
+    }
+    return join(homedir(), '.local', 'state', 'accountfactory', 'logs');
+  }
 
-transports.push(consoleTransport);
+  ensureLogDirectory(directory) {
+    if (!existsSync(directory)) {
+      mkdirSync(directory, { recursive: true });
+    }
+  }
 
-// if ACCOUNTFACTORY_ENABLE_LOGGING environment variable is set add file transport
-if (process.env.ACCOUNTFACTORY_ENABLE_LOGGING === 'true') {
-  createLogDirectory();
-  transports.push(
-    new winston.transports.File({
-      filename: join(getLogDirectory(), 'accountfactory.log'),
-    })
-  );
+  // Logging methods
+  debug(message) { this.logger.debug(message); }
+  info(message) { this.logger.info(message); }
+  success(message) { this.logger.log('success', message); }
+  warning(message) { this.logger.warning(message); }
+  error(message) { this.logger.error(message); }
+
+  // Test helpers
+  getLogEntries() {
+    return this.transports
+      .filter(t => t instanceof winston.transports.Console)
+      .map(t => t.history || [])
+      .flat();
+  }
+
+  clearLogEntries() {
+    this.transports
+      .filter(t => t instanceof winston.transports.Console)
+      .forEach(t => t.history = []);
+  }
 }
 
-const winstonLogger = winston.createLogger({
-  levels: customLevels.levels,
-  transports,
-});
+// Create default instance
+export const logger = new Logger();
 
-const log = (message, type = 'info') => {
-  winstonLogger.log(type, message);
-};
-
-export const logger = {
-  debug: message => log(message, 'debug'),
-  info: message => log(message, 'info'),
-  success: message => log(message, 'success'),
-  error: message => log(message, 'error'),
-  warning: message => log(message, 'warning'),
-};
-
+// For testing, export the class
 export default logger;

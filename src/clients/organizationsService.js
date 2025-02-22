@@ -4,7 +4,9 @@ import {
   ListAccountsCommand,
   OrganizationsClient,
 } from '@aws-sdk/client-organizations';
-import logger from '../utils/logger.js';
+import { Logger } from "../utils/logger.js";
+
+const logger = new Logger();
 
 // Factory function to create an Organizations client
 export const createAwsOrganizationsClient = () => {
@@ -13,11 +15,12 @@ export const createAwsOrganizationsClient = () => {
 };
 
 export class OrganizationsService {
-  constructor(organizationsClient, delayBetweenOperations = 15000) {
+  constructor(organizationsClient, delayBetweenOperations = 15000, injectedLogger = logger) {
     if (!organizationsClient) {throw new Error('OrganizationsClient is required');}
     this.client = organizationsClient;
     this.DELAY_BETWEEN_OPERATIONS = delayBetweenOperations;
-    logger.debug('OrganizationsService initialized with all required dependencies');
+    this.logger = injectedLogger;
+    this.logger.debug('OrganizationsService initialized with all required dependencies');
   }
 
   async #createOrganizationAccount(email, accountName, roleName) {
@@ -42,28 +45,28 @@ export class OrganizationsService {
   }
 
   async createAccount(email, accountName, roleName, overwrite = false) {
-    logger.debug(`Starting account creation process for ${email}`);
+    this.logger.debug(`Starting account creation process for ${email}`);
 
     // Check if account exists
     if (overwrite !== true) {
       const exists = await this.accountExists(email);
       if (exists) {
-        logger.info(`Account ${email} already exists. Skipping creation...`);
+        this.logger.info(`Account ${email} already exists. Skipping creation...`);
         return null;
       }
     }
 
     // Create the account
     const createAccountId = await this.#createOrganizationAccount(email, accountName, roleName);
-    logger.info(`Account creation initiated: ${createAccountId}`);
+    this.logger.info(`Account creation initiated: ${createAccountId}`);
 
     // Poll for completion
     const accountStatus = await this.pollAccountCreation(createAccountId);
 
     if (accountStatus.State === 'SUCCEEDED') {
-      logger.info('Account creation succeeded');
+      this.logger.info('Account creation succeeded');
     } else {
-      logger.error(`Account creation failed: ${accountStatus.FailureReason}`);
+      this.logger.error(`Account creation failed: ${accountStatus.FailureReason}`);
     }
 
     // Wait before creating the next account
@@ -76,9 +79,9 @@ export class OrganizationsService {
     let accountStatus = { State: 'STARTED' };
 
     while (accountStatus.State !== 'SUCCEEDED' && accountStatus.State !== 'FAILED') {
-      logger.debug(`Polling account creation status (${createAccountId})...`);
+      this.logger.debug(`Polling account creation status (${createAccountId})...`);
       accountStatus = await this.describeCreateAccountStatus(createAccountId);
-      logger.debug(`Account Status: ${JSON.stringify(accountStatus)}`);
+      this.logger.debug(`Account Status: ${JSON.stringify(accountStatus)}`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
@@ -109,7 +112,7 @@ export class OrganizationsService {
       return accountDetails;
     } catch (error) {
       if (error.name === 'AccessDeniedException') {
-        logger.error(
+        this.logger.error(
           'Access Denied. This account does not have permissions to list or create accounts in AWS Organizations. Please use a profile with the required permissions.'
         );
         process.exit(1);
@@ -125,7 +128,7 @@ export class OrganizationsService {
 
   async waitForNextOperation() {
     const delayInSeconds = this.DELAY_BETWEEN_OPERATIONS / 1000;
-    logger.info(`Waiting ${delayInSeconds} seconds before next operation...`);
+    this.logger.info(`Waiting ${delayInSeconds} seconds before next operation...`);
     await new Promise(resolve => setTimeout(resolve, this.DELAY_BETWEEN_OPERATIONS));
   }
 }
