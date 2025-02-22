@@ -39,13 +39,6 @@ const testUser = {
 };
 
 describe('IAMService', () => {
-  describe('createAwsIAMClient', () => {
-    test('should create and return a new IAMClient', async () => {
-      const { createAwsIAMClient } = await import('./iamService.js');
-      const client = createAwsIAMClient();
-      expect(client).toBeInstanceOf(IAMClient);
-    });
-  });
 
   describe('constructor', () => {
     test('should initialize with provided clients', async () => {

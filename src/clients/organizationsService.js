@@ -8,12 +8,6 @@ import { Logger } from "../utils/logger.js";
 
 const logger = new Logger();
 
-// Factory function to create an Organizations client
-export const createAwsOrganizationsClient = () => {
-  logger.debug('Creating AWS OrganizationsClient');
-  return new OrganizationsClient();
-};
-
 export class OrganizationsService {
   constructor(organizationsClient, delayBetweenOperations = 15000, injectedLogger = logger) {
     if (!organizationsClient) {throw new Error('OrganizationsClient is required');}

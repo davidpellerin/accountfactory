@@ -16,14 +16,6 @@ describe('OrganizationsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('createAwsOrganizationsClient', () => {
-    test('should return new client when called', async () => {
-      const module = await import('./organizationsService.js');
-      const client = module.createAwsOrganizationsClient();
-      expect(client).toBeInstanceOf(OrganizationsClient);
-    });
-  });
-
   describe('constructor', () => {
     test('should throw error when client not provided', async () => {
       const module = await import('./organizationsService.js');
