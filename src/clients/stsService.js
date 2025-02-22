@@ -1,5 +1,7 @@
-import logger from '../utils/logger.js';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
+import { Logger } from "../utils/logger.js";
+
+const logger = new Logger();
 
 // Factory function to create an STS client
 export const createAwsSTSClient = () => {
