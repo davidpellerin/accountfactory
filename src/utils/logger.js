@@ -120,6 +120,3 @@ export class Logger {
 
 // Create default instance
 export const logger = new Logger();
-
-// For testing, export the class
-export default logger;

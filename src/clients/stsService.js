@@ -1,7 +1,5 @@
 import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
-import { Logger } from "../utils/logger.js";
-
-const logger = new Logger();
+import { logger } from "../utils/logger.js";
 
 export class STSService {
   constructor(stsClient, injectedLogger = logger) {
