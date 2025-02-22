@@ -6,9 +6,11 @@ import {
   IAMClient,
 } from '@aws-sdk/client-iam';
 import { AssumeRoleCommand } from '@aws-sdk/client-sts';
-import logger from '../utils/logger.js';
 import { ADMIN_POLICY_ARN, ORGANIZATION_ROLE_NAME } from '../constants.js';
 import { PasswordService } from '../utils/passwordService.js';
+import { Logger } from "../utils/logger.js";
+
+const logger = new Logger();
 
 // Factory function to create an IAM client
 export const createAwsIAMClient = () => {
@@ -17,7 +19,7 @@ export const createAwsIAMClient = () => {
 };
 
 export class IAMService {
-  constructor(iamClient, secretsManagerClient, stsClient) {
+  constructor(iamClient, secretsManagerClient, stsClient, injectedLogger = logger) {
     if (!iamClient) {
       throw new Error('IAMClient is required');
     }
@@ -30,7 +32,8 @@ export class IAMService {
     this.iamClient = iamClient;
     this.secretsManagerClient = secretsManagerClient;
     this.stsClient = stsClient;
-    logger.debug('IAMService initialized with all required dependencies');
+    this.logger = injectedLogger;
+    this.logger.debug('IAMService initialized with all required dependencies');
   }
 
   async createNewUser(username) {
@@ -48,7 +51,7 @@ export class IAMService {
         );
       } catch (error) {
         if (error?.name === 'EntityAlreadyExists' || error?.$metadata?.httpStatusCode === 409) {
-          logger.warning(
+          this.logger.warning(
             `Login profile already exists for user ${username}, skipping password creation`
           );
           password = '**EXISTING PASSWORD NOT CHANGED**';
@@ -78,7 +81,7 @@ export class IAMService {
         secretAccessKey: accessKeyResponse.AccessKey.SecretAccessKey,
       };
     } catch (error) {
-      logger.error(`Error creating new user: ${error.message}`);
+      this.logger.error(`Error creating new user: ${error.message}`);
       throw error;
     }
   }
@@ -97,28 +100,28 @@ export class IAMService {
 
   async createIAMUser(accountId, username) {
     try {
-      logger.info(`Creating IAM user ${username} in account ${accountId}`);
+      this.logger.info(`Creating IAM user ${username} in account ${accountId}`);
 
       await this.getIAMClientForAccount(accountId);
 
       // Check if user exists and handle accordingly
       const userExists = await this.checkIfIamUserExists(username);
       if (userExists) {
-        logger.info(
+        this.logger.info(
           `IAM User already exists. Skipping user creation for ${username} in account ${accountId}`
         );
         return false;
       } else {
-        logger.info(
+        this.logger.info(
           `User ${username} does not exist in account ${accountId}. Creating new user...`
         );
 
         // Create new user and get credentials
-        logger.info(`Creating new user ${username} in account ${accountId}`);
+        this.logger.info(`Creating new user ${username} in account ${accountId}`);
         const credentials = await this.createNewUser(username);
 
         // Store credentials in Secrets Manager
-        logger.info(
+        this.logger.info(
           `Storing credentials in Secrets Manager for user ${username} in account ${accountId}`
         );
         await this.secretsManagerClient.storeCredentialsInSecretsManager(
@@ -130,7 +133,7 @@ export class IAMService {
         return true;
       }
     } catch (error) {
-      logger.error(`Error creating user in account ${accountId}: ${error.message}`);
+      this.logger.error(`Error creating user in account ${accountId}: ${error.message}`);
       throw error;
     }
   }
@@ -155,7 +158,7 @@ export class IAMService {
         },
       });
     } catch (error) {
-      logger.error(`Failed to get IAM client for account ${accountId}: ${error.message}`);
+      this.logger.error(`Failed to get IAM client for account ${accountId}: ${error.message}`);
       throw error;
     }
   }

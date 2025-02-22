@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 import accountfactory from '../src/accountfactory.js';
-import logger from '../src/utils/logger.js';
+import { Logger } from '../src/utils/logger.js';
 
 accountfactory().catch(error => {
+  const logger = new Logger();
   logger.error('Error:', error);
   process.exit(1);
 });

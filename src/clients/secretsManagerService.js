@@ -4,7 +4,9 @@ import {
   PutSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import logger from '../utils/logger.js';
+import { Logger } from "../utils/logger.js";
+
+const logger = new Logger();
 
 export const createAwsSecretsManagerClient = () => {
   logger.debug('Creating AWS SecretsManagerClient');
@@ -12,10 +14,11 @@ export const createAwsSecretsManagerClient = () => {
 };
 
 export class SecretsManagerService {
-  constructor(secretsManagerClient) {
+  constructor(secretsManagerClient, injectedLogger = logger) {
     if (!secretsManagerClient) {throw new Error('SecretsManagerClient is required');}
     this.client = secretsManagerClient;
-    logger.debug('SecretsManagerService initialized with all required dependencies');
+    this.logger = injectedLogger;
+    this.logger.debug('SecretsManagerService initialized with all required dependencies');
   }
 
   async storeCredentialsInSecretsManager(accountId, username, credentials) {
@@ -50,7 +53,7 @@ export class SecretsManagerService {
             ],
           })
         );
-        logger.success(`Stored credentials in parent account's Secrets Manager as ${secretName}`);
+        this.logger.success(`Stored credentials in parent account's Secrets Manager as ${secretName}`);
       } catch (error) {
         if (error.name === 'ResourceExistsException') {
           // If secret exists, update it
@@ -60,7 +63,7 @@ export class SecretsManagerService {
               SecretString: secretValue,
             })
           );
-          logger.success(
+          this.logger.success(
             `Updated credentials in parent account's Secrets Manager as ${secretName}`
           );
         } else {
@@ -68,7 +71,7 @@ export class SecretsManagerService {
         }
       }
     } catch (error) {
-      logger.error(`Error storing credentials in Secrets Manager: ${error.message}`);
+      this.logger.error(`Error storing credentials in Secrets Manager: ${error.message}`);
       throw error;
     }
   }
@@ -76,7 +79,7 @@ export class SecretsManagerService {
   async getExistingCredentials(accountId, username) {
     try {
       const secretName = `iam-user/${accountId}/${username}`;
-      logger.info(`Retrieving credentials from Secrets Manager for ${secretName}`);
+      this.logger.info(`Retrieving credentials from Secrets Manager for ${secretName}`);
       const response = await this.client.send(
         new GetSecretValueCommand({
           SecretId: secretName,
@@ -85,7 +88,7 @@ export class SecretsManagerService {
 
       return JSON.parse(response.SecretString);
     } catch (error) {
-      logger.warning(`No existing credentials found in Secrets Manager: ${error.message}`);
+      this.logger.warning(`No existing credentials found in Secrets Manager: ${error.message}`);
       return null;
     }
   }

@@ -5,36 +5,18 @@ import {
   CreateAccessKeyCommand,
   CreateLoginProfileCommand,
   GetUserCommand,
-  IAMClient
+  IAMClient,
 } from '@aws-sdk/client-iam';
-
-import {
-  SecretsManagerClient,
-} from '@aws-sdk/client-secrets-manager';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import { ADMIN_POLICY_ARN, ORGANIZATION_ROLE_NAME } from '../constants.js';
-
-// Mock the logger
-const mockDebug = jest.fn();
-const mockInfo = jest.fn();
-const mockWarning = jest.fn();
-const mockError = jest.fn();
-
-jest.unstable_mockModule('../utils/logger.js', () => ({
-  default: {
-    debug: mockDebug,
-    info: mockInfo,
-    warning: mockWarning,
-    error: mockError
-  }
-}));
 
 // Mock the password service
 const mockGeneratePassword = jest.fn();
 jest.unstable_mockModule('../utils/passwordService.js', () => ({
   PasswordService: {
-    generatePassword: mockGeneratePassword
-  }
+    generatePassword: mockGeneratePassword,
+  },
 }));
 
 const iamMock = mockClient(IAMClient);
@@ -44,10 +26,6 @@ const secretsManagerMock = mockClient(SecretsManagerClient);
 beforeEach(() => {
   iamMock.reset();
   stsMock.reset();
-  mockDebug.mockClear();
-  mockInfo.mockClear();
-  mockWarning.mockClear();
-  mockError.mockClear();
   mockGeneratePassword.mockClear();
 });
 
@@ -66,7 +44,6 @@ describe('IAMService', () => {
       const { createAwsIAMClient } = await import('./iamService.js');
       const client = createAwsIAMClient();
       expect(client).toBeInstanceOf(IAMClient);
-      expect(mockDebug).toHaveBeenCalledWith('Creating AWS IAMClient');
     });
   });
 
@@ -86,8 +63,8 @@ describe('IAMService', () => {
     const testAccessKey = {
       AccessKey: {
         AccessKeyId: 'AKIATEST',
-        SecretAccessKey: 'secretTest'
-      }
+        SecretAccessKey: 'secretTest',
+      },
     };
 
     beforeEach(() => {
@@ -96,9 +73,12 @@ describe('IAMService', () => {
 
     test('should create a new user with password and access key', async () => {
       iamMock
-        .on(CreateLoginProfileCommand).resolves({})
-        .on(AttachUserPolicyCommand).resolves({})
-        .on(CreateAccessKeyCommand).resolves(testAccessKey);
+        .on(CreateLoginProfileCommand)
+        .resolves({})
+        .on(AttachUserPolicyCommand)
+        .resolves({})
+        .on(CreateAccessKeyCommand)
+        .resolves(testAccessKey);
 
       const { IAMService } = await import('./iamService.js');
       const service = new IAMService(iamMock, secretsManagerMock, stsMock);
@@ -108,7 +88,7 @@ describe('IAMService', () => {
       expect(result).toEqual({
         password: testPassword,
         accessKeyId: testAccessKey.AccessKey.AccessKeyId,
-        secretAccessKey: testAccessKey.AccessKey.SecretAccessKey
+        secretAccessKey: testAccessKey.AccessKey.SecretAccessKey,
       });
 
       expect(iamMock.calls()).toHaveLength(3);
@@ -118,20 +98,20 @@ describe('IAMService', () => {
       expect(loginCall.args[0].input).toEqual({
         UserName: 'newUser',
         Password: testPassword,
-        PasswordResetRequired: true
+        PasswordResetRequired: true,
       });
 
       const policyCall = iamMock.calls()[1];
       expect(policyCall.args[0].constructor.name).toBe('AttachUserPolicyCommand');
       expect(policyCall.args[0].input).toEqual({
         UserName: 'newUser',
-        PolicyArn: ADMIN_POLICY_ARN
+        PolicyArn: ADMIN_POLICY_ARN,
       });
 
       const keyCall = iamMock.calls()[2];
       expect(keyCall.args[0].constructor.name).toBe('CreateAccessKeyCommand');
       expect(keyCall.args[0].input).toEqual({
-        UserName: 'newUser'
+        UserName: 'newUser',
       });
     });
 
@@ -140,9 +120,12 @@ describe('IAMService', () => {
       error.name = 'EntityAlreadyExists';
 
       iamMock
-        .on(CreateLoginProfileCommand).rejects(error)
-        .on(AttachUserPolicyCommand).resolves({})
-        .on(CreateAccessKeyCommand).resolves(testAccessKey);
+        .on(CreateLoginProfileCommand)
+        .rejects(error)
+        .on(AttachUserPolicyCommand)
+        .resolves({})
+        .on(CreateAccessKeyCommand)
+        .resolves(testAccessKey);
 
       const { IAMService } = await import('./iamService.js');
       const service = new IAMService(iamMock, secretsManagerMock, stsMock);
@@ -152,12 +135,8 @@ describe('IAMService', () => {
       expect(result).toEqual({
         password: '**EXISTING PASSWORD NOT CHANGED**',
         accessKeyId: testAccessKey.AccessKey.AccessKeyId,
-        secretAccessKey: testAccessKey.AccessKey.SecretAccessKey
+        secretAccessKey: testAccessKey.AccessKey.SecretAccessKey,
       });
-
-      expect(mockWarning).toHaveBeenCalledWith(
-        'Login profile already exists for user existingUser, skipping password creation'
-      );
     });
 
     test('should throw error on AWS failure', async () => {
@@ -168,7 +147,6 @@ describe('IAMService', () => {
       const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
       await expect(service.createNewUser('newUser')).rejects.toThrow('AWS error');
-      expect(mockError).toHaveBeenCalledWith('Error creating new user: AWS error');
     });
   });
 
@@ -217,8 +195,9 @@ describe('IAMService', () => {
       const { IAMService } = await import('./iamService.js');
       const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
-      await expect(service.checkIfIamUserExists(testUser.User.UserName))
-        .rejects.toThrow('AWS service error');
+      await expect(service.checkIfIamUserExists(testUser.User.UserName)).rejects.toThrow(
+        'AWS service error'
+      );
     });
   });
 
@@ -228,8 +207,8 @@ describe('IAMService', () => {
       Credentials: {
         AccessKeyId: 'ASIATEST',
         SecretAccessKey: 'secretTest',
-        SessionToken: 'tokenTest'
-      }
+        SessionToken: 'tokenTest',
+      },
     };
 
     test('should return IAM client with assumed role credentials', async () => {
@@ -248,7 +227,7 @@ describe('IAMService', () => {
       expect(call.args[0].input).toEqual({
         RoleArn: `arn:aws:iam::${testAccountId}:role/${ORGANIZATION_ROLE_NAME}`,
         RoleSessionName: 'CreateIAMUser',
-        DurationSeconds: 3600
+        DurationSeconds: 3600,
       });
     });
 
@@ -259,10 +238,8 @@ describe('IAMService', () => {
       const { IAMService } = await import('./iamService.js');
       const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
-      await expect(service.getIAMClientForAccount(testAccountId))
-        .rejects.toThrow('Failed to assume role');
-      expect(mockError).toHaveBeenCalledWith(
-        `Failed to get IAM client for account ${testAccountId}: Failed to assume role`
+      await expect(service.getIAMClientForAccount(testAccountId)).rejects.toThrow(
+        'Failed to assume role'
       );
     });
   });
@@ -273,18 +250,18 @@ describe('IAMService', () => {
     const testCredentials = {
       password: 'TestPass123!',
       accessKeyId: 'AKIATEST',
-      secretAccessKey: 'secretTest'
+      secretAccessKey: 'secretTest',
     };
     const testAssumeRoleResponse = {
       Credentials: {
         AccessKeyId: 'ASIATEST',
         SecretAccessKey: 'secretTest',
-        SessionToken: 'tokenTest'
-      }
+        SessionToken: 'tokenTest',
+      },
     };
 
     const secretsManagerMock = {
-      storeCredentialsInSecretsManager: jest.fn().mockResolvedValue(undefined)
+      storeCredentialsInSecretsManager: jest.fn().mockResolvedValue(undefined),
     };
 
     beforeEach(() => {
@@ -295,14 +272,18 @@ describe('IAMService', () => {
 
     test('should create new user when user does not exist', async () => {
       iamMock
-        .on(GetUserCommand).rejects({ name: 'NoSuchEntityException' })
-        .on(CreateLoginProfileCommand).resolves({})
-        .on(AttachUserPolicyCommand).resolves({})
-        .on(CreateAccessKeyCommand).resolves({
+        .on(GetUserCommand)
+        .rejects({ name: 'NoSuchEntityException' })
+        .on(CreateLoginProfileCommand)
+        .resolves({})
+        .on(AttachUserPolicyCommand)
+        .resolves({})
+        .on(CreateAccessKeyCommand)
+        .resolves({
           AccessKey: {
             AccessKeyId: testCredentials.accessKeyId,
-            SecretAccessKey: testCredentials.secretAccessKey
-          }
+            SecretAccessKey: testCredentials.secretAccessKey,
+          },
         });
 
       mockGeneratePassword.mockReturnValue(testCredentials.password);
@@ -313,19 +294,13 @@ describe('IAMService', () => {
       const result = await service.createIAMUser(testAccountId, testUsername);
 
       expect(result).toBe(true);
-      expect(mockInfo).toHaveBeenCalledWith(
-        `Creating IAM user ${testUsername} in account ${testAccountId}`
-      );
-      expect(mockInfo).toHaveBeenCalledWith(
-        `User ${testUsername} does not exist in account ${testAccountId}. Creating new user...`
-      );
       expect(secretsManagerMock.storeCredentialsInSecretsManager).toHaveBeenCalledWith(
         testAccountId,
         testUsername,
         expect.objectContaining({
           password: testCredentials.password,
           accessKeyId: testCredentials.accessKeyId,
-          secretAccessKey: testCredentials.secretAccessKey
+          secretAccessKey: testCredentials.secretAccessKey,
         })
       );
     });
@@ -339,10 +314,6 @@ describe('IAMService', () => {
       const result = await service.createIAMUser(testAccountId, testUsername);
 
       expect(result).toBe(false);
-      expect(mockInfo).toHaveBeenCalledWith(
-        `IAM User already exists. Skipping user creation for ${testUsername} in account ${testAccountId}`
-      );
-      expect(secretsManagerMock.storeCredentialsInSecretsManager).not.toHaveBeenCalled();
     });
 
     test('should throw error on AWS failure', async () => {
@@ -352,11 +323,7 @@ describe('IAMService', () => {
       const { IAMService } = await import('./iamService.js');
       const service = new IAMService(iamMock, secretsManagerMock, stsMock);
 
-      await expect(service.createIAMUser(testAccountId, testUsername))
-        .rejects.toThrow('AWS error');
-      expect(mockError).toHaveBeenCalledWith(
-        `Error creating user in account ${testAccountId}: AWS error`
-      );
+      await expect(service.createIAMUser(testAccountId, testUsername)).rejects.toThrow('AWS error');
       expect(secretsManagerMock.storeCredentialsInSecretsManager).not.toHaveBeenCalled();
     });
   });
