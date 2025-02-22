@@ -1,4 +1,4 @@
-import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
+import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 import { Logger } from "../utils/logger.js";
 
 const logger = new Logger();

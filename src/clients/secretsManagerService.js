@@ -2,7 +2,6 @@ import {
   CreateSecretCommand,
   GetSecretValueCommand,
   PutSecretValueCommand,
-  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { Logger } from "../utils/logger.js";
 

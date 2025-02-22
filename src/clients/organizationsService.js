@@ -2,7 +2,6 @@ import {
   CreateAccountCommand,
   DescribeCreateAccountStatusCommand,
   ListAccountsCommand,
-  OrganizationsClient,
 } from '@aws-sdk/client-organizations';
 import { Logger } from "../utils/logger.js";
 
