@@ -1,31 +1,15 @@
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { mockClient } from 'aws-sdk-client-mock';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
+import { createTestLogger } from '../utils/testLogger.js';
 
-// Mock the logger
-const mockDebug = jest.fn();
-const mockInfo = jest.fn();
-const mockWarning = jest.fn();
-const mockError = jest.fn();
-
-jest.unstable_mockModule('../utils/logger.js', () => ({
-  default: {
-    debug: mockDebug,
-    info: mockInfo,
-    warning: mockWarning,
-    error: mockError
-  }
-}));
-
+let testLogger;
 const stsClientMock = mockClient(STSClient);
 
 describe('STSService', () => {
   beforeEach(() => {
     stsClientMock.reset();
-    mockDebug.mockClear();
-    mockInfo.mockClear();
-    mockWarning.mockClear();
-    mockError.mockClear();
+    testLogger = createTestLogger();
   });
 
   describe('createAwsSTSClient', () => {
@@ -33,7 +17,6 @@ describe('STSService', () => {
       const { createAwsSTSClient } = await import('./stsService.js');
       const client = createAwsSTSClient();
       expect(client).toBeInstanceOf(STSClient);
-      expect(mockDebug).toHaveBeenCalledWith('Creating AWS STSClient');
     });
   });
 
@@ -45,8 +28,10 @@ describe('STSService', () => {
 
     test('should create instance when stsClient is provided', async () => {
       const { STSService } = await import('./stsService.js');
-      expect(() => new STSService(stsClientMock)).not.toThrow();
-      expect(mockDebug).toHaveBeenCalledWith('STSService initialized with all required dependencies');
+      expect(() => new STSService(stsClientMock, testLogger)).not.toThrow();
+      const logs = testLogger.getLogEntries();
+      expect(logs).toHaveLength(1);
+      expect(logs).toContainEqual({ level: 'debug', message: 'STSService initialized with all required dependencies' });
     });
   });
 
@@ -61,7 +46,7 @@ describe('STSService', () => {
       stsClientMock.on(GetCallerIdentityCommand).resolves(mockResponse);
 
       const { STSService } = await import('./stsService.js');
-      const stsService = new STSService(stsClientMock);
+      const stsService = new STSService(stsClientMock, testLogger);
 
       const result = await stsService.getCallerIdentity();
 
@@ -69,7 +54,10 @@ describe('STSService', () => {
       expect(stsClientMock.calls()).toHaveLength(1);
       const call = stsClientMock.calls()[0];
       expect(call.args[0].constructor.name).toBe('GetCallerIdentityCommand');
-      expect(mockInfo).toHaveBeenCalledWith(`AWS account ID: ${mockResponse.Account}`);
+
+      const logs = testLogger.getLogEntries();
+      expect(logs).toHaveLength(2);
+      expect(logs).toContainEqual({ level: 'info', message: `AWS account ID: ${mockResponse.Account}` });
     });
 
     test('should log warning when running as root user', async () => {
@@ -82,12 +70,14 @@ describe('STSService', () => {
       stsClientMock.on(GetCallerIdentityCommand).resolves(mockResponse);
 
       const { STSService } = await import('./stsService.js');
-      const stsService = new STSService(stsClientMock);
+      const stsService = new STSService(stsClientMock, testLogger);
 
       const result = await stsService.getCallerIdentity();
 
       expect(result).toEqual(mockResponse);
-      expect(mockWarning).toHaveBeenCalledWith('Warning: Running as root user. Consider using an IAM user instead.');
+      const logs = testLogger.getLogEntries();
+      expect(logs).toHaveLength(3);
+      expect(logs).toContainEqual({ level: 'warning', message: `Warning: Running as root user. Consider using an IAM user instead.` });
     });
 
     test('should throw error when account ID is missing', async () => {
@@ -112,10 +102,13 @@ describe('STSService', () => {
       stsClientMock.on(GetCallerIdentityCommand).rejects(mockErr);
 
       const { STSService } = await import('./stsService.js');
-      const stsService = new STSService(stsClientMock);
+      const stsService = new STSService(stsClientMock, testLogger);
 
       await expect(stsService.getCallerIdentity()).rejects.toThrow(errorMessage);
-      expect(mockError).toHaveBeenCalledWith(`Failed to get caller identity: ${errorMessage}`);
+
+      const logs = testLogger.getLogEntries();
+      expect(logs).toHaveLength(2);
+      expect(logs).toContainEqual({ level: 'error', message: `Failed to get caller identity: ${errorMessage}` });
     });
   });
 });
