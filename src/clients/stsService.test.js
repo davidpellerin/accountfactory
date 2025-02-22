@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, jest, test } from '@jest/globals';
+import { beforeEach, describe, expect, test } from '@jest/globals';
 import { mockClient } from 'aws-sdk-client-mock';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { createTestLogger } from '../utils/testLogger.js';
