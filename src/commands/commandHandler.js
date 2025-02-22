@@ -6,9 +6,8 @@ import { createInterface } from 'readline';
 import { IAMService } from '../clients/iamService.js';
 import { SetupProfilesService } from './setupProfilesService.js';
 import { SecretsManagerService } from '../clients/secretsManagerService.js';
-import { Logger } from "../utils/logger.js";
+import { logger } from "../utils/logger.js";
 
-const logger = new Logger();
 
 export class CommandHandler {
   constructor(organizationsClient, iamClient, stsClient, secretsManagerClient, injectedLogger = logger) {

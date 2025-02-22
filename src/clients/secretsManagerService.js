@@ -3,9 +3,7 @@ import {
   GetSecretValueCommand,
   PutSecretValueCommand,
 } from '@aws-sdk/client-secrets-manager';
-import { Logger } from "../utils/logger.js";
-
-const logger = new Logger();
+import { logger } from "../utils/logger.js";
 
 export class SecretsManagerService {
   constructor(secretsManagerClient, injectedLogger = logger) {

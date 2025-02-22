@@ -1,8 +1,6 @@
 import { exec } from 'child_process';
 import { DEFAULT_REGION } from '../constants.js';
-import { Logger } from "../utils/logger.js";
-
-const logger = new Logger();
+import { logger } from "../utils/logger.js";
 
 export class SetupProfilesService {
   constructor(stsClient, secretsManagerClient, injectedLogger = logger) {

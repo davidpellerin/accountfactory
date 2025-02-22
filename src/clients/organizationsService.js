@@ -3,9 +3,7 @@ import {
   DescribeCreateAccountStatusCommand,
   ListAccountsCommand,
 } from '@aws-sdk/client-organizations';
-import { Logger } from "../utils/logger.js";
-
-const logger = new Logger();
+import { logger } from "../utils/logger.js";
 
 export class OrganizationsService {
   constructor(organizationsClient, delayBetweenOperations = 15000, injectedLogger = logger) {
