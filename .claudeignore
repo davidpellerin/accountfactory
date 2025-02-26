@@ -1,0 +1,11 @@
+.cursor
+.claudesync
+.github
+.vscode
+node_modules
+coverage
+node_modules
+.eslintrc.json
+.gitignore
+.npmignore
+.prettierrc
