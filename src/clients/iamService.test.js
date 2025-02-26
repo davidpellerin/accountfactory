@@ -49,6 +49,21 @@ describe('IAMService', () => {
       expect(service.secretsManagerClient).toBe(secretsManagerMock);
       expect(service.stsClient).toBe(stsMock);
     });
+
+    test('should throw error when IAMClient is not provided', async () => {
+      const { IAMService } = await import('./iamService.js');
+      expect(() => new IAMService(null, {}, stsMock)).toThrow('IAMClient is required');
+    });
+
+    test('should throw error when SecretsManagerClient is not provided', async () => {
+      const { IAMService } = await import('./iamService.js');
+      expect(() => new IAMService(iamMock, null, stsMock)).toThrow('SecretsManagerClient is required');
+    });
+
+    test('should throw error when STSClient is not provided', async () => {
+      const { IAMService } = await import('./iamService.js');
+      expect(() => new IAMService(iamMock, {}, null)).toThrow('STSClient is required');
+    });
   });
 
   describe('createNewUser', () => {
@@ -108,9 +123,33 @@ describe('IAMService', () => {
       });
     });
 
-    test('should handle existing login profile', async () => {
+    test('should handle existing login profile with EntityAlreadyExists error', async () => {
       const error = new Error('Profile exists');
       error.name = 'EntityAlreadyExists';
+
+      iamMock
+        .on(CreateLoginProfileCommand)
+        .rejects(error)
+        .on(AttachUserPolicyCommand)
+        .resolves({})
+        .on(CreateAccessKeyCommand)
+        .resolves(testAccessKey);
+
+      const { IAMService } = await import('./iamService.js');
+      const service = new IAMService(iamMock, secretsManagerMock, stsMock);
+
+      const result = await service.createNewUser('existingUser');
+
+      expect(result).toEqual({
+        password: '**EXISTING PASSWORD NOT CHANGED**',
+        accessKeyId: testAccessKey.AccessKey.AccessKeyId,
+        secretAccessKey: testAccessKey.AccessKey.SecretAccessKey,
+      });
+    });
+    
+    test('should handle existing login profile with HTTP 409 status code', async () => {
+      const error = new Error('Profile exists');
+      error.$metadata = { httpStatusCode: 409 };
 
       iamMock
         .on(CreateLoginProfileCommand)
