@@ -7,7 +7,7 @@ import { STSClient } from '@aws-sdk/client-sts';
 import { IAMClient } from '@aws-sdk/client-iam';
 import { OrganizationsClient } from '@aws-sdk/client-organizations';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-import { logger } from '../src/utils/logger.js';
+import { logger } from './utils/logger.js';
 
 async function main() {
   logger.debug('Initializing services...');

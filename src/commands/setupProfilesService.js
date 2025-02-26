@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { DEFAULT_REGION } from '../constants.js';
 import { logger } from "../utils/logger.js";
+import { SecretsManagerService } from '../clients/secretsManagerService.js';
 
 export class SetupProfilesService {
   constructor(stsClient, secretsManagerClient, injectedLogger = logger) {
@@ -9,6 +10,7 @@ export class SetupProfilesService {
     this.stsClient = stsClient;
     this.secretsManagerClient = secretsManagerClient;
     this.logger = injectedLogger;
+    this.secretsManagerService = new SecretsManagerService(secretsManagerClient, injectedLogger);
   }
 
   async setupAwsProfile(accountConfig, liveAccountList, options) {
@@ -25,7 +27,7 @@ export class SetupProfilesService {
       }
 
       this.logger.info(`Getting existing credentials for user ${options.username} in account ${account.Id}`);
-      const credentials = await this.secretsManagerClient.getExistingCredentials(
+      const credentials = await this.secretsManagerService.getExistingCredentials(
         account.Id,
         options.username
       );

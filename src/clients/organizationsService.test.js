@@ -6,6 +6,7 @@ import {
   ListAccountsCommand,
   OrganizationsClient,
 } from '@aws-sdk/client-organizations';
+import { ORGANIZATION_ROLE_NAME } from '../constants.js';
 
 // Create mock at the top level
 const organizationsClientMock = mockClient(OrganizationsClient);
@@ -59,7 +60,7 @@ describe('OrganizationsService', () => {
       const result = await service.createAccount(
         testEmail,
         testAccountName,
-        module.ORGANIZATION_ROLE_NAME
+        ORGANIZATION_ROLE_NAME
       );
 
       // Assert
@@ -72,7 +73,7 @@ describe('OrganizationsService', () => {
       expect(createCall.args[0].input).toEqual({
         Email: testEmail,
         AccountName: testAccountName,
-        RoleName: module.ORGANIZATION_ROLE_NAME,
+        RoleName: ORGANIZATION_ROLE_NAME,
       });
     });
 
@@ -95,7 +96,7 @@ describe('OrganizationsService', () => {
       const result = await service.createAccount(
         testEmail,
         testAccountName,
-        module.ORGANIZATION_ROLE_NAME
+        ORGANIZATION_ROLE_NAME
       );
 
       // Assert
@@ -127,7 +128,7 @@ describe('OrganizationsService', () => {
       const result = await service.createAccount(
         testEmail,
         testAccountName,
-        module.ORGANIZATION_ROLE_NAME
+        ORGANIZATION_ROLE_NAME
       );
 
       // Assert

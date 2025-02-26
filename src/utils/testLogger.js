@@ -24,7 +24,7 @@ export const createTestLogger = () => {
     info: (msg) => { logger.info(msg); logs.push({ level: 'info', message: msg }); },
     success: (msg) => { logger.log('success', msg); logs.push({ level: 'success', message: msg }); },
     error: (msg) => { logger.error(msg); logs.push({ level: 'error', message: msg }); },
-    warning: (msg) => { logger.warning(msg); logs.push({ level: 'warning', message: msg }); },
+    warning: (msg) => { logger.log('warning', msg); logs.push({ level: 'warning', message: msg }); },
     getLogEntries: () => [...logs],
     clearLogs: () => { logs.length = 0; }
   };
