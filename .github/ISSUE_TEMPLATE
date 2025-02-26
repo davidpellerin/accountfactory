@@ -1,0 +1,45 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: A clear description of the feature you're requesting
+      placeholder: As a user, I want to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_details
+    attributes:
+      label: Suggested Implementation
+      description: If you have ideas about how to implement this feature, describe them here
+      placeholder: This could be implemented by...
+    validations:
+      required: false
+
+  - type: textarea
+    id: affected_files
+    attributes:
+      label: Affected Files or Components
+      description: If you know which files or components would need to change, list them here
+      placeholder: src/components/Button.js, utils/helpers.js
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be true for this feature to be complete?
+      placeholder: - The button should change color when clicked\n- The form should validate input
+    validations:
+      required: true
