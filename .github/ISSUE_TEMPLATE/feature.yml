@@ -40,6 +40,6 @@ body:
     attributes:
       label: Acceptance Criteria
       description: What needs to be true for this feature to be complete?
-      placeholder: - The button should change color when clicked\n- The form should validate input
+      placeholder: "- The button should change color when clicked\n- The form should validate input"
     validations:
       required: true
