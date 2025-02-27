@@ -19,6 +19,22 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/utils/logger.js",
+      "!**/*.test.js",
+      "!**/node_modules/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
+  },
   "keywords": [
     "aws",
     "organizations",
