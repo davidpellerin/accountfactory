@@ -1,9 +1,11 @@
 import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
-import { logger } from "../utils/logger.js";
+import { logger } from '../utils/logger.js';
 
 export class STSService {
   constructor(stsClient, injectedLogger = logger) {
-    if (!stsClient) {throw new Error('STSClient is required');}
+    if (!stsClient) {
+      throw new Error('STSClient is required');
+    }
     this.stsClient = stsClient;
     this.logger = injectedLogger;
     this.logger.debug('STSService initialized with all required dependencies');

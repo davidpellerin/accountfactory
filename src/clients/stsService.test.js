@@ -23,7 +23,10 @@ describe('STSService', () => {
       expect(() => new STSService(stsClientMock, testLogger)).not.toThrow();
       const logs = testLogger.getLogEntries();
       expect(logs).toHaveLength(1);
-      expect(logs).toContainEqual({ level: 'debug', message: 'STSService initialized with all required dependencies' });
+      expect(logs).toContainEqual({
+        level: 'debug',
+        message: 'STSService initialized with all required dependencies',
+      });
     });
   });
 
@@ -32,7 +35,7 @@ describe('STSService', () => {
       const mockResponse = {
         Account: '123456789012',
         Arn: 'arn:aws:iam::123456789012:user/test-user',
-        UserId: 'AIDAXXXXXXXXXXXXXXXX'
+        UserId: 'AIDAXXXXXXXXXXXXXXXX',
       };
 
       stsClientMock.on(GetCallerIdentityCommand).resolves(mockResponse);
@@ -49,14 +52,17 @@ describe('STSService', () => {
 
       const logs = testLogger.getLogEntries();
       expect(logs).toHaveLength(2);
-      expect(logs).toContainEqual({ level: 'info', message: `AWS account ID: ${mockResponse.Account}` });
+      expect(logs).toContainEqual({
+        level: 'info',
+        message: `AWS account ID: ${mockResponse.Account}`,
+      });
     });
 
     test('should log warning when running as root user', async () => {
       const mockResponse = {
         Account: '123456789012',
         Arn: 'arn:aws:iam::123456789012:root',
-        UserId: 'AIDAXXXXXXXXXXXXXXXX'
+        UserId: 'AIDAXXXXXXXXXXXXXXXX',
       };
 
       stsClientMock.on(GetCallerIdentityCommand).resolves(mockResponse);
@@ -69,13 +75,16 @@ describe('STSService', () => {
       expect(result).toEqual(mockResponse);
       const logs = testLogger.getLogEntries();
       expect(logs).toHaveLength(3);
-      expect(logs).toContainEqual({ level: 'warning', message: `Warning: Running as root user. Consider using an IAM user instead.` });
+      expect(logs).toContainEqual({
+        level: 'warning',
+        message: `Warning: Running as root user. Consider using an IAM user instead.`,
+      });
     });
 
     test('should throw error when account ID is missing', async () => {
       const mockResponse = {
         Arn: 'arn:aws:iam::123456789012:user/test-user',
-        UserId: 'AIDAXXXXXXXXXXXXXXXX'
+        UserId: 'AIDAXXXXXXXXXXXXXXXX',
       };
 
       stsClientMock.on(GetCallerIdentityCommand).resolves(mockResponse);
@@ -100,7 +109,10 @@ describe('STSService', () => {
 
       const logs = testLogger.getLogEntries();
       expect(logs).toHaveLength(2);
-      expect(logs).toContainEqual({ level: 'error', message: `Failed to get caller identity: ${errorMessage}` });
+      expect(logs).toContainEqual({
+        level: 'error',
+        message: `Failed to get caller identity: ${errorMessage}`,
+      });
     });
   });
 });

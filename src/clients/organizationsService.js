@@ -3,11 +3,13 @@ import {
   DescribeCreateAccountStatusCommand,
   ListAccountsCommand,
 } from '@aws-sdk/client-organizations';
-import { logger } from "../utils/logger.js";
+import { logger } from '../utils/logger.js';
 
 export class OrganizationsService {
   constructor(organizationsClient, delayBetweenOperations = 15000, injectedLogger = logger) {
-    if (!organizationsClient) {throw new Error('OrganizationsClient is required');}
+    if (!organizationsClient) {
+      throw new Error('OrganizationsClient is required');
+    }
     this.client = organizationsClient;
     this.DELAY_BETWEEN_OPERATIONS = delayBetweenOperations;
     this.logger = injectedLogger;
