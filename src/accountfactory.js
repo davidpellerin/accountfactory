@@ -49,13 +49,22 @@ async function main() {
     .option('--username <username>', 'IAM username to create in each account', 'deploy')
     .option('--overwrite', 'Overwrite existing accounts', false)
     .option('--skipconfirmation', 'Skip confirmation prompt', false)
-    .action((options) => commandHandler.handleCreateAccounts(options));
+    .action(options => commandHandler.handleCreateAccounts(options));
 
   program
     .command('setup-aws-profiles')
     .description('🔧 Configure AWS profiles using creds from Secrets Manager')
     .option('--username <username>', 'IAM username to use', 'deploy')
     .action(() => commandHandler.handleSetupAwsProfiles());
+
+  program
+    .command('logging')
+    .description('🔧 Set log level and enable/disable file logging')
+    .option('--loglevel <level>', 'Set log level (e.g., debug, info, warning, error)', 'info')
+    .option('--file-logging <enable>', 'Enable (true) or disable (false) file logging', 'false')
+    .action(options => {
+      commandHandler.handleSetLogConfig(options);
+    });
 
   program.parse();
 }

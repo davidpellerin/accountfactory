@@ -6,11 +6,16 @@ import { createInterface } from 'readline';
 import { IAMService } from '../clients/iamService.js';
 import { SetupProfilesService } from './setupProfilesService.js';
 import { SecretsManagerService } from '../clients/secretsManagerService.js';
-import { logger } from "../utils/logger.js";
-
+import { logger } from '../utils/logger.js';
 
 export class CommandHandler {
-  constructor(organizationsClient, iamClient, stsClient, secretsManagerClient, injectedLogger = logger) {
+  constructor(
+    organizationsClient,
+    iamClient,
+    stsClient,
+    secretsManagerClient,
+    injectedLogger = logger
+  ) {
     this.organizationsClient = organizationsClient;
     this.iamClient = iamClient;
     this.stsClient = stsClient;
@@ -21,8 +26,17 @@ export class CommandHandler {
     this.logger.debug('CommandHandler initialized with dependencies');
     this.stsService = new STSService(this.stsClient, this.logger);
     this.organizationsService = new OrganizationsService(this.organizationsClient, this.logger);
-    this.iamService = new IAMService(this.iamClient, this.secretsManagerClient, this.stsClient, this.logger);
-    this.setupProfilesService = new SetupProfilesService(this.stsClient, this.secretsManagerClient, this.logger);
+    this.iamService = new IAMService(
+      this.iamClient,
+      this.secretsManagerClient,
+      this.stsClient,
+      this.logger
+    );
+    this.setupProfilesService = new SetupProfilesService(
+      this.stsClient,
+      this.secretsManagerClient,
+      this.logger
+    );
     this.secretsManagerService = new SecretsManagerService(this.secretsManagerClient, this.logger);
   }
 
@@ -57,13 +71,36 @@ export class CommandHandler {
     }
   }
 
+  async handleSetLogConfig(options) {
+    try {
+      const { loglevel, fileLogging } = options;
+
+      if (loglevel) {
+        this.logger.level = loglevel;
+        this.logger.info(`Log level set to ${loglevel}`);
+      }
+
+      if (fileLogging) {
+        const enableFileLogging = fileLogging === 'true';
+        this.logger.enableFileLogging = enableFileLogging;
+        this.logger.info(`File logging ${enableFileLogging ? 'enabled' : 'disabled'}`);
+      }
+    } catch (error) {
+      this.logger.error(`Command failed: ${error.message}`);
+      process.exit(1);
+    }
+  }
+
   async handleListAccountsWithCredentials() {
     try {
       this.logger.debug('Listing accounts');
       await this.stsService.getCallerIdentity();
       const accountList = await this.organizationsService.listOrganizationsAccounts();
       for (const account of accountList) {
-        const password = await this.secretsManagerService.getExistingCredentials(account.Id, 'deploy');
+        const password = await this.secretsManagerService.getExistingCredentials(
+          account.Id,
+          'deploy'
+        );
         this.logger.info(`${account.Id} - ${account.Email} - ${account.Status}`);
         this.logger.info(password);
       }
@@ -80,7 +117,6 @@ export class CommandHandler {
   }
 
   async handleCreateAccounts(options) {
-
     this.logger.debug('Creating accounts');
 
     try {
@@ -101,7 +137,7 @@ export class CommandHandler {
         const accountId = await this.organizationsService.createAccount(
           environmentConfig.email,
           environmentConfig.accountName,
-          "OrganizationAccountAccessRole",
+          'OrganizationAccountAccessRole',
           options.overwrite
         );
 

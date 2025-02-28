@@ -9,7 +9,7 @@ export class Logger {
     const {
       level = process.env.ACCOUNTFACTORY_LOG_LEVEL || 'info',
       silent = process.env.NODE_ENV === 'test',
-      enableFileLogging = process.env.ACCOUNTFACTORY_ENABLE_LOGGING === 'true'
+      enableFileLogging = process.env.ACCOUNTFACTORY_ENABLE_LOGGING === 'true',
     } = options;
 
     this.customLevels = {
@@ -26,7 +26,7 @@ export class Logger {
         success: 'green',
         info: 'white',
         debug: 'gray',
-      }
+      },
     };
 
     this.transports = this.createTransports({ level, silent, enableFileLogging });
@@ -44,16 +44,17 @@ export class Logger {
         format: winston.format.combine(
           winston.format.timestamp(),
           winston.format.printf(({ timestamp, level, message }) => {
-            const color = {
-              debug: chalk.gray,
-              info: chalk.white,
-              success: chalk.green,
-              error: chalk.red,
-              warning: chalk.yellow,
-            }[level] || chalk.white;
+            const color =
+              {
+                debug: chalk.gray,
+                info: chalk.white,
+                success: chalk.green,
+                error: chalk.red,
+                warning: chalk.yellow,
+              }[level] || chalk.white;
             return color(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
           })
-        )
+        ),
       })
     );
 
@@ -64,7 +65,7 @@ export class Logger {
 
       transports.push(
         new winston.transports.File({
-          filename: join(logDirectory, 'accountfactory.log')
+          filename: join(logDirectory, 'accountfactory.log'),
         })
       );
     }
@@ -75,7 +76,7 @@ export class Logger {
   createLogger() {
     return winston.createLogger({
       levels: this.customLevels.levels,
-      transports: this.transports
+      transports: this.transports,
     });
   }
 
@@ -97,11 +98,21 @@ export class Logger {
   }
 
   // Logging methods
-  debug(message) { this.logger.debug(message); }
-  info(message) { this.logger.info(message); }
-  success(message) { this.logger.log('success', message); }
-  warning(message) { this.logger.log('warning', message); }
-  error(message) { this.logger.error(message); }
+  debug(message) {
+    this.logger.debug(message);
+  }
+  info(message) {
+    this.logger.info(message);
+  }
+  success(message) {
+    this.logger.log('success', message);
+  }
+  warning(message) {
+    this.logger.log('warning', message);
+  }
+  error(message) {
+    this.logger.error(message);
+  }
 
   // Test helpers
   getLogEntries() {
@@ -114,7 +125,7 @@ export class Logger {
   clearLogEntries() {
     this.transports
       .filter(t => t instanceof winston.transports.Console)
-      .forEach(t => t.history = []);
+      .forEach(t => (t.history = []));
   }
 }
 
