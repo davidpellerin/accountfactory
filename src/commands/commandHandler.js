@@ -11,6 +11,18 @@ import { logger } from "../utils/logger.js";
 
 export class CommandHandler {
   constructor(organizationsClient, iamClient, stsClient, secretsManagerClient, injectedLogger = logger) {
+    if (!organizationsClient) {
+      throw new Error('OrganizationsClient is required');
+    }
+    if (!iamClient) {
+      throw new Error('IAMClient is required');
+    }
+    if (!stsClient) {
+      throw new Error('STSClient is required');
+    }
+    if (!secretsManagerClient) {
+      throw new Error('SecretsManagerClient is required');
+    }
     this.organizationsClient = organizationsClient;
     this.iamClient = iamClient;
     this.stsClient = stsClient;
