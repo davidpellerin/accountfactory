@@ -99,8 +99,8 @@ export class Logger {
   // Logging methods
   debug(message) { this.logger.debug(message); }
   info(message) { this.logger.info(message); }
-  success(message) { this.logger.log('success', message); }
-  warning(message) { this.logger.log('warning', message); }
+  success(message) { this.logger.success(message); }
+  warning(message) { this.logger.warning(message); }
   error(message) { this.logger.error(message); }
 
   // Test helpers
