@@ -1,6 +1,7 @@
 # 🏭 accountfactory
 
 [![codecov](https://codecov.io/github/davidpellerin/accountfactory/graph/badge.svg?token=K1B8PQL30L)](https://codecov.io/github/davidpellerin/accountfactory)
+[![npm version](https://badge.fury.io/js/@davidpellerin%2Faccountfactory.svg)](https://badge.fury.io/js/@davidpellerin%2Faccountfactory)
 
 A command-line tool for managing [AWS Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html), creating accounts, and setting up IAM users across multiple accounts.
 
