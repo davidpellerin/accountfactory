@@ -77,10 +77,13 @@ export class SecretsManagerService {
           SecretId: secretName,
         })
       );
-
       return JSON.parse(response.SecretString);
     } catch (error) {
-      this.logger.warning(`No existing credentials found in Secrets Manager: ${error.message}`);
+      if (error.name === 'ResourceNotFoundException') {
+        this.logger.warning(`No existing credentials found in Secrets Manager: ${error.message}`);
+      } else {
+        this.logger.error(`Error accessing Secrets Manager: ${error.message}`);
+      }
       return null;
     }
   }
