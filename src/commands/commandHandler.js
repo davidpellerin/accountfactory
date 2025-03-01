@@ -7,7 +7,7 @@ import { IAMService } from '../clients/iamService.js';
 import { SetupProfilesService } from './setupProfilesService.js';
 import { SecretsManagerService } from '../clients/secretsManagerService.js';
 import { logger } from "../utils/logger.js";
-
+import { ORGANIZATION_ROLE_NAME } from "../constants.js";
 
 export class CommandHandler {
   constructor(organizationsClient, iamClient, stsClient, secretsManagerClient, injectedLogger = logger) {
@@ -113,7 +113,7 @@ export class CommandHandler {
         const accountId = await this.organizationsService.createAccount(
           environmentConfig.email,
           environmentConfig.accountName,
-          "OrganizationAccountAccessRole",
+          ORGANIZATION_ROLE_NAME,
           options.overwrite
         );
 
