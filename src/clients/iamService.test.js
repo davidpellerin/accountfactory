@@ -39,7 +39,6 @@ const testUser = {
 };
 
 describe('IAMService', () => {
-
   describe('constructor', () => {
     test('should initialize with provided clients', async () => {
       const { IAMService } = await import('./iamService.js');
@@ -57,7 +56,9 @@ describe('IAMService', () => {
 
     test('should throw error when SecretsManagerClient is not provided', async () => {
       const { IAMService } = await import('./iamService.js');
-      expect(() => new IAMService(iamMock, null, stsMock)).toThrow('SecretsManagerClient is required');
+      expect(() => new IAMService(iamMock, null, stsMock)).toThrow(
+        'SecretsManagerClient is required'
+      );
     });
 
     test('should throw error when STSClient is not provided', async () => {
@@ -146,7 +147,7 @@ describe('IAMService', () => {
         secretAccessKey: testAccessKey.AccessKey.SecretAccessKey,
       });
     });
-    
+
     test('should handle existing login profile with HTTP 409 status code', async () => {
       const error = new Error('Profile exists');
       error.$metadata = { httpStatusCode: 409 };

@@ -4,7 +4,6 @@
 [![npm version](https://badge.fury.io/js/@davidpellerin%2Faccountfactory.svg)](https://badge.fury.io/js/@davidpellerin%2Faccountfactory)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/davidpellerin/accountfactory/issues)
 
-
 A command-line tool for managing [AWS Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html), creating accounts, and setting up IAM users across multiple accounts.
 
 ## Features
@@ -22,7 +21,7 @@ npm install -g @davidpellerin/accountfactory
 
 ## Prerequisites
 
-- Node.js 16 or higher (Node.js 18+ recommended as 16 is EOL)
+- Node.js 18 or higher
 - AWS CLI installed and configured with appropriate credentials
 - AWS Organizations access in your root/management account
 
@@ -88,9 +87,7 @@ Creates an `accountfactory.json` file in your current directory. It is a json fi
     }
   ]
 }
-
 ```
-
 
 ### Create New Accounts
 
@@ -100,7 +97,6 @@ $ accountfactory create-accounts --username <iam-username>
 
 Iterates through the accounts in `accountfactory.json` and creates those accounts in your AWS Organization.
 
-
 ### Setup AWS Profiles
 
 ```bash
@@ -108,7 +104,6 @@ $ accountfactory setup-aws-profiles --username <iam-username> --prefix <profile-
 ```
 
 This command creates profiles in (`~/.aws/credentials`) for each account. This command uses the `aws` cli tool under the hood.
-
 
 ## Security
 
@@ -129,53 +124,49 @@ Here are the permissions that I use:
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "organizations:CreateAccount",
-                "organizations:DescribeCreateAccountStatus",
-                "organizations:DescribeAccount",
-                "organizations:ListAccounts",
-                "organizations:ListAWSServiceAccessForOrganization",
-                "organizations:EnableAWSServiceAccess",
-                "organizations:DescribeOrganization",
-                "organizations:ListChildren",
-                "organizations:ListRoots"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "iam:CreateRole",
-                "iam:AttachRolePolicy",
-                "iam:PutRolePolicy",
-                "iam:CreatePolicy",
-                "iam:ListRoles",
-                "iam:GetRole"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "sts:AssumeRole"
-            ],
-            "Resource": "arn:aws:iam::*:role/OrganizationAccountAccessRole"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "organizations:CreateAccount",
+        "organizations:DescribeCreateAccountStatus",
+        "organizations:DescribeAccount",
+        "organizations:ListAccounts",
+        "organizations:ListAWSServiceAccessForOrganization",
+        "organizations:EnableAWSServiceAccess",
+        "organizations:DescribeOrganization",
+        "organizations:ListChildren",
+        "organizations:ListRoots"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:AttachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:CreatePolicy",
+        "iam:ListRoles",
+        "iam:GetRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["sts:AssumeRole"],
+      "Resource": "arn:aws:iam::*:role/OrganizationAccountAccessRole"
+    }
+  ]
 }
 ```
 
 ## Environment Variables
 
-| Variable | Value | Purpose |
-|---------------------|--------|----------|
-| ACCOUNTFACTORY_ENABLE_LOGGING | true | Enables logging to disk (~/.local/state/accountfactory) |
-
-
+| Variable                      | Value | Purpose                                                 |
+| ----------------------------- | ----- | ------------------------------------------------------- |
+| ACCOUNTFACTORY_ENABLE_LOGGING | true  | Enables logging to disk (~/.local/state/accountfactory) |
 
 ## Contributing
 

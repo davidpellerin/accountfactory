@@ -3,11 +3,13 @@ import {
   GetSecretValueCommand,
   PutSecretValueCommand,
 } from '@aws-sdk/client-secrets-manager';
-import { logger } from "../utils/logger.js";
+import { logger } from '../utils/logger.js';
 
 export class SecretsManagerService {
   constructor(secretsManagerClient, injectedLogger = logger) {
-    if (!secretsManagerClient) {throw new Error('SecretsManagerClient is required');}
+    if (!secretsManagerClient) {
+      throw new Error('SecretsManagerClient is required');
+    }
     this.client = secretsManagerClient;
     this.logger = injectedLogger;
     this.logger.debug('SecretsManagerService initialized with all required dependencies');
@@ -45,7 +47,9 @@ export class SecretsManagerService {
             ],
           })
         );
-        this.logger.success(`Stored credentials in parent account's Secrets Manager as ${secretName}`);
+        this.logger.success(
+          `Stored credentials in parent account's Secrets Manager as ${secretName}`
+        );
       } catch (error) {
         if (error.name === 'ResourceExistsException') {
           // If secret exists, update it

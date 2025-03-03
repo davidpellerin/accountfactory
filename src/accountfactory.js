@@ -49,7 +49,7 @@ async function main() {
     .option('--username <username>', 'IAM username to create in each account', 'deploy')
     .option('--overwrite', 'Overwrite existing accounts', false)
     .option('--skipconfirmation', 'Skip confirmation prompt', false)
-    .action((options) => commandHandler.handleCreateAccounts(options));
+    .action(options => commandHandler.handleCreateAccounts(options));
 
   program
     .command('setup-aws-profiles')

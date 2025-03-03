@@ -8,7 +8,7 @@ import {
 import { AssumeRoleCommand } from '@aws-sdk/client-sts';
 import { ADMIN_POLICY_ARN, ORGANIZATION_ROLE_NAME } from '../constants.js';
 import { PasswordService } from '../utils/passwordService.js';
-import { logger } from "../utils/logger.js";
+import { logger } from '../utils/logger.js';
 
 export class IAMService {
   constructor(iamClient, secretsManagerClient, stsClient, injectedLogger = logger) {

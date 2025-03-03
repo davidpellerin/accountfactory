@@ -8,7 +8,7 @@ export class PasswordService {
     const special = '!@#$%^&*';
 
     // Helper function to securely get a random character from a string
-    const getSecureRandomChar = (characterSet) => {
+    const getSecureRandomChar = characterSet => {
       const randomIndex = crypto.randomInt(characterSet.length);
       return characterSet[randomIndex];
     };
