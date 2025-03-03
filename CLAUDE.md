@@ -1,6 +1,7 @@
 # AccountFactory Development Guide
 
 ## Commands
+
 - Build: N/A (JavaScript)
 - Test: `npm test` (all tests) or `npm test -- -t "test name"` (single test)
 - Test with coverage: `npm run test:coverage`
@@ -8,6 +9,7 @@
 - Format: `npm run format` (fix) or `npm run format:check` (check only)
 
 ## Code Style
+
 - **Imports**: ES modules (`import/export`), sorted alphabetically
 - **Formatting**: Prettier with 100 char line length, 2 space indent, single quotes
 - **Errors**: Use explicit error handling with try/catch, propagate with context
@@ -20,6 +22,7 @@
 - **Logging**: Use the logger utility with appropriate log levels (debug, info, success, warning, error)
 
 ## Unit Test Standards
+
 - Test files next to source files with `.test.js` extension
 - Reset mocks in `beforeEach`
 - Test names: "should X when Y"

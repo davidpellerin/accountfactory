@@ -70,8 +70,10 @@ describe('SecretsManagerService', () => {
 
     test('should update existing secret when it already exists', async () => {
       secretsManagerMock
-        .on(CreateSecretCommand).rejects({ name: 'ResourceExistsException' })
-        .on(PutSecretValueCommand).resolves({});
+        .on(CreateSecretCommand)
+        .rejects({ name: 'ResourceExistsException' })
+        .on(PutSecretValueCommand)
+        .resolves({});
 
       const { SecretsManagerService } = await import('./secretsManagerService.js');
       const service = new SecretsManagerService(secretsManagerMock);
@@ -91,8 +93,7 @@ describe('SecretsManagerService', () => {
 
     test('should throw error when AWS operation fails', async () => {
       const errorMessage = 'AWS operation failed';
-      secretsManagerMock
-        .on(CreateSecretCommand).rejects(new Error(errorMessage));
+      secretsManagerMock.on(CreateSecretCommand).rejects(new Error(errorMessage));
 
       const { SecretsManagerService } = await import('./secretsManagerService.js');
       const service = new SecretsManagerService(secretsManagerMock);
