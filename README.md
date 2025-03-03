@@ -21,7 +21,7 @@ npm install -g @davidpellerin/accountfactory
 
 ## Prerequisites
 
-- Node.js 16 or higher (Node.js 18+ recommended as 16 is EOL)
+- Node.js 18 or higher
 - AWS CLI installed and configured with appropriate credentials
 - AWS Organizations access in your root/management account
 

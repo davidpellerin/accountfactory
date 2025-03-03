@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
       fail-fast: false # Continue with other versions even if one fails
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,6 @@ jobs:
       - run: npm ci
       - run: npm run test
       - run: npm run lint
-        if: matrix.node-version >= '16' # Only run lint on newer versions
 
   coverage:
     needs: test
